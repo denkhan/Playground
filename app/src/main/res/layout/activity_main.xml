@@ -22,7 +22,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/logotype" />
+        app:srcCompat="@drawable/logotype"
+        android:contentDescription="@string/none"/>
 
     <TextView
         android:id="@+id/textView"
@@ -31,8 +32,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginBottom="16dp"
-        android:text="v0.1"
-        android:textSize="18dp"
+        android:text="@string/v0_1"
+        android:textSize="18sp"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
