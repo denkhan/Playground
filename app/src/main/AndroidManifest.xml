@@ -11,7 +11,14 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".ActivityChild" />
+        <activity
+            android:name=".ActivityChild"
+            android:label="ActivityChild"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.playground.MainActivity" />
+        </activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
