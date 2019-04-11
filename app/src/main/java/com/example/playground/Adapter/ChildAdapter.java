@@ -1,6 +1,8 @@
 package com.example.playground.Adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +35,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.child_distance.setText(Integer.toString(mData.get(position).getDist()));
+        int distance =  mData.get(position).getDist();
+        if( distance <= 50) holder.child_layout.setBackgroundResource(R.color.colorClose);
         holder.child_name.setText(mData.get(position).getname());
 
     }
@@ -49,9 +52,11 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView child_name;
         TextView child_distance;
+        ConstraintLayout child_layout;
 
         ViewHolder(View itemView) {
             super(itemView);
+            child_layout = itemView.findViewById(R.id.child_layout);
             child_distance = itemView.findViewById(R.id.child_distance);
             child_name = itemView.findViewById(R.id.child_name);
         }

@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
     }
-
+        // Action when clicking on a child
     public void openChild(View v){
         Intent intent = new Intent(getBaseContext(), ActivityChild.class);
         TextView t = (TextView)v.findViewById(R.id.child_name);
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+        // Action of ADD CHILD button
     public void addChild(View v){
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Add child");
