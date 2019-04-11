@@ -1,17 +1,21 @@
 package com.example.playground;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.playground.Adapter.ChildAdapter;
@@ -21,6 +25,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     ChildAdapter adapter;
+    ArrayList<Child> Children = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // data to populate the RecyclerView with
-        ArrayList<Child> Children = new ArrayList<>();
+
         Children.add(new Child("Alice",50));
         Children.add(new Child("Bob",100));
         Children.add(new Child("Charlie",500));
@@ -48,15 +53,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ChildAdapter(this, Children);
         recyclerView.setAdapter(adapter);
 
-
-
-        View view = findViewById(R.id.child_one);
-        TextView t = (TextView)view.findViewById(R.id.child_name);
-        t.setText("Alice");
-
-        View view1 = findViewById(R.id.child_two);
-        TextView t1 = (TextView)view1.findViewById(R.id.child_name);
-        t1.setText("Bob");
     }
 
     public void openChild(View v){
@@ -64,6 +60,29 @@ public class MainActivity extends AppCompatActivity {
         TextView t = (TextView)v.findViewById(R.id.child_name);
         intent.putExtra("NAME", t.getText().toString());
         startActivity(intent);
+    }
+
+    public void addChild(View v){
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        alertDialog.setTitle("Add child");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.add_child, null);
+        alertDialog.setView(dialogView);
+
+        final EditText eT1 = (EditText) dialogView.findViewById(R.id.edit_text_child_name);
+        final EditText eT2 = (EditText) dialogView.findViewById(R.id.edit_text_child_distance);
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String m = eT1.getText().toString();
+                        int temp = Integer.parseInt(eT2.getText().toString());
+                        Children.add(new Child(m, temp));
+                        adapter.notifyDataSetChanged();
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 
     @Override
