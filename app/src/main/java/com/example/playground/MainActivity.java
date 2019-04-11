@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
@@ -12,7 +14,13 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.playground.Adapter.ChildAdapter;
+
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+
+    ChildAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,21 +31,24 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /*FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
-        /*View view = findViewById(R.id.child_one);
 
-        view.setOnClickListener(openChild());
+        // data to populate the RecyclerView with
+        ArrayList<Child> Children = new ArrayList<>();
+        Children.add(new Child("Alice",50));
+        Children.add(new Child("Bob",100));
+        Children.add(new Child("Charlie",500));
+        Children.add(new Child("Dennis",50));
+        Children.add(new Child("Elsa",60));
+        Children.add(new Child("Frank",50));
+        Children.add(new Child("Greta",50));
 
-        View view1 = findViewById(R.id.child_two);
-        String name_two = "Bob";
-        view1.setOnClickListener(openChild(), name_two);*/
+        // set up the RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.rv_child);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ChildAdapter(this, Children);
+        recyclerView.setAdapter(adapter);
+
+
 
         View view = findViewById(R.id.child_one);
         TextView t = (TextView)view.findViewById(R.id.child_name);
