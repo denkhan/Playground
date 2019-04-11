@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         int distance =  mData.get(position).getDist();
+        Log.d("distance" , Integer.toString(distance));
         if( distance <= 50) holder.child_layout.setBackgroundResource(R.color.colorClose);
+        else holder.child_layout.setBackgroundResource(R.color.colorFar);
+        holder.child_distance.setText(Integer.toString(distance));
         holder.child_name.setText(mData.get(position).getname());
 
     }
