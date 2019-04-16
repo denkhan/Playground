@@ -36,6 +36,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         return new ViewHolder(view);
     }
 
+    public void setLoc(Location l){
+        location = new Location(l);
+    }
+
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {

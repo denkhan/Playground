@@ -39,6 +39,7 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
     ChildAdapter adapter;
+    Parent parent;
     ArrayList<Child> Children = new ArrayList<>();
     private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
@@ -46,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -56,18 +56,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         checkPermission();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        parent = new Parent(location);
+
+
+        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
+                1000,
+                1, this);
 
         Location cLocation = new Location(location);
         cLocation.setLatitude(cLocation.getLatitude()+0.001);
         cLocation.setLongitude(cLocation.getLongitude()+0.001);
         // data to populate the RecyclerView with
-        Children.add(new Child("Alice",cLocation, location));
+        Children.add(new Child("Alice",cLocation));
 
         Location bLocation = new Location(location);
         bLocation.setLatitude(bLocation.getLatitude()-0.0003);
         bLocation.setLongitude(bLocation.getLongitude()-0.0003);
         // data to populate the RecyclerView with
-        Children.add(new Child("Bob",bLocation, location));
+        Children.add(new Child("Bob",bLocation));
 
 
         // set up the RecyclerView
@@ -81,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void openChild(View v){
         Intent intent = new Intent(getBaseContext(), ActivityChild.class);
         TextView t = (TextView)v.findViewById(R.id.child_name);
-        intent.putExtra("NAME", getChild(t.getText().toString()));
+        intent.putExtra("CHILD", getChild(t.getText().toString()));
+        intent.putExtra("PARENT", parent);
         startActivity(intent);
     }
 
@@ -168,7 +175,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     @Override
-    public void onLocationChanged(Location location) { }
+    public void onLocationChanged(Location location) {
+        parent.setLocation(location);
+        adapter.setLoc(location);
+        adapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) { }

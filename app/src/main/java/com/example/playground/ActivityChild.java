@@ -15,20 +15,7 @@ import android.widget.TextView;
 
 public class ActivityChild extends AppCompatActivity implements SensorEventListener {
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_child);
-//
-//        Intent intent = getIntent();
-//        String message =intent.getStringExtra("NAME");
-//
-//        TextView t = (TextView)findViewById(R.id.achild_name);
-//        t.setText(message);
-//    }
-
     ImageView compass_img;
-    TextView txt_compass;
     double mAzimuth;
     private SensorManager mSensorManager;
     private Sensor mRotationV, mAccelerometer, mMagnetometer;
@@ -39,6 +26,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private float[] mLastMagnetometer = new float[3];
     private boolean mLastAccelerometerSet = false;
     private boolean mLastMagnetometerSet = false;
+    private Parent parent;
     private Child child;
 
     @Override
@@ -51,7 +39,8 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         Intent intent = getIntent();
 
-        child = (Child) intent.getSerializableExtra("NAME");
+        child = (Child) intent.getSerializableExtra("CHILD");
+        parent = (Parent) intent.getSerializableExtra("PARENT");
 
         start();
     }
@@ -80,7 +69,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mAzimuth = (float) Math.toDegrees(orientation[0]); // orientation
         mAzimuth = (mAzimuth + 360) % 360;
 
-        mAzimuth -= bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
+        mAzimuth -= bearing(parent.getLat(), parent.getLon(), child.getcLat(), child.getcLon());
 
         //Log.d("MAZ", ""+mAzimuth);
         //mAzimuth = Math.round(mAzimuth);
