@@ -7,7 +7,6 @@ import java.io.Serializable;
 
 public class Child implements Serializable {
     private String name;
-    private int distance;
     private transient Location location;
     private transient Location parentLocation;
 
@@ -19,12 +18,6 @@ public class Child implements Serializable {
     public Child(String name, Location location, Location parentLocation/*, int distance*/){
         this.name = name;
         //this.distance = distance;
-        this.location = location;
-        this.parentLocation = parentLocation;
-        setUp();
-    }
-
-    private void setUp(){
         pLat = parentLocation.getLatitude();
         pLon = parentLocation.getLongitude();
         cLat = location.getLatitude();
@@ -36,16 +29,22 @@ public class Child implements Serializable {
     public double getpLon(){return pLon; }
     public double getcLat(){return cLat; }
     public double getcLon(){return cLon; }
-    public String getname(){return name;}
-    public int getDist(){return distance;}
-    public Location getChildLocation(){return location;}
-    public Location getParentLocation(){return parentLocation;}
-    public float distanceBetween(Location l){
-        if(location.getLatitude() == l.getLatitude()){
-            Log.d("DISTANCE", "HEJ");
-        }
+    public String getname(){return name; }
 
-        return location.distanceTo(l);
+    public double distanceBetween(Location l){
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(l.getLatitude() - cLat);
+        double lonDistance = Math.toRadians(l.getLongitude() - cLon);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(cLat)) * Math.cos(Math.toRadians(l.getLatitude()))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        distance = Math.pow(distance, 2);
+
+        return Math.sqrt(distance);
     }
 
 }

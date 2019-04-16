@@ -39,11 +39,11 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        float distance =  mData.get(position).distanceBetween(location);
-        Log.d("distance" , Float.toString(distance));
+        double distance =  mData.get(position).distanceBetween(location);
+        Log.d("distance" , Double.toString(distance));
         if( distance <= 50) holder.child_layout.setBackgroundResource(R.color.colorClose);
         else holder.child_layout.setBackgroundResource(R.color.colorFar);
-        holder.child_distance.setText(Float.toString(distance));
+        holder.child_distance.setText(Double.toString(distance));
         holder.child_name.setText(mData.get(position).getname());
 
     }

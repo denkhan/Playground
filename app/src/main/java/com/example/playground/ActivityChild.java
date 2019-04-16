@@ -60,7 +60,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             SensorManager.getRotationMatrixFromVector(rMat, event.values);
-            mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
+            // mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
         }
 
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -73,10 +73,18 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         if (mLastAccelerometerSet && mLastMagnetometerSet) {
             SensorManager.getRotationMatrix(rMat, null, mLastAccelerometer, mLastMagnetometer);
             SensorManager.getOrientation(rMat, orientation);
-            mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
+            // mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
         }
-        Log.d("MAZ", ""+mAzimuth);
-        mAzimuth = Math.round(mAzimuth);
+
+        SensorManager.getOrientation(rMat, orientation);
+        mAzimuth = (float) Math.toDegrees(orientation[0]); // orientation
+        mAzimuth = (mAzimuth + 360) % 360;
+
+        mAzimuth -= bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
+
+        //Log.d("MAZ", ""+mAzimuth);
+        //mAzimuth = Math.round(mAzimuth);
+
         compass_img.setRotation((float)-mAzimuth);
 
         String where = "NW";
@@ -98,8 +106,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         if (mAzimuth <= 80 && mAzimuth > 10)
             where = "NE";
 
-
-        //txt_compass.setText(mAzimuth + "° " + where);
     }
 
     @Override
