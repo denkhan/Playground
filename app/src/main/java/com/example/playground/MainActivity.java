@@ -3,6 +3,8 @@ package com.example.playground;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,11 +24,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.playground.Adapter.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
+import com.example.playground.Adapter.SoundWarning;
+import com.example.playground.Adapter.VibrationWarning;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     ChildAdapter adapter;
     ArrayList<Child> Children = new ArrayList<>();
+    private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
     Location location;
 
@@ -141,7 +147,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning(View p) {
-
+        warnings[0] = new SoundWarning(this);
+        warnings[1] = new VibrationWarning(this);
+        warnings[0].execute();
+        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        else {
+            warnings[1].execute();
+        }
+    }
+    public void warning_off(View p) {
+        //warnings[0].cancel();
+        warnings[0].cancel();
+        warnings[1].cancel();
+        /*for (AsyncWarning w : warnings) {
+            w.terminate();
+        }*/
     }
 
     @Override
