@@ -1,15 +1,23 @@
 package com.example.playground;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -21,11 +29,14 @@ import android.widget.TextView;
 import com.example.playground.Adapter.ChildAdapter;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LocationListener {
 
     ChildAdapter adapter;
     ArrayList<Child> Children = new ArrayList<>();
+    LocationManager locationManager;
+    Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,21 +47,27 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        checkPermission();
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
+        Location cLocation = new Location(location);
+        cLocation.setLatitude(cLocation.getLatitude()+0.001);
+        cLocation.setLongitude(cLocation.getLongitude()+0.001);
         // data to populate the RecyclerView with
+        Children.add(new Child("Alice",cLocation, location));
 
-        Children.add(new Child("Alice",50));
-        Children.add(new Child("Bob",100));
-        Children.add(new Child("Charlie",500));
-        Children.add(new Child("Dennis",50));
-        Children.add(new Child("Elsa",60));
-        Children.add(new Child("Frank",50));
-        Children.add(new Child("Greta",50));
+        Location bLocation = new Location(location);
+        bLocation.setLatitude(bLocation.getLatitude()-0.0003);
+        bLocation.setLongitude(bLocation.getLongitude()-0.0003);
+        // data to populate the RecyclerView with
+        Children.add(new Child("Bob",bLocation, location));
+
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.rv_child);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ChildAdapter(this, Children);
+        adapter = new ChildAdapter(this, Children, location);
         recyclerView.setAdapter(adapter);
 
     }
@@ -58,8 +75,15 @@ public class MainActivity extends AppCompatActivity {
     public void openChild(View v){
         Intent intent = new Intent(getBaseContext(), ActivityChild.class);
         TextView t = (TextView)v.findViewById(R.id.child_name);
-        intent.putExtra("NAME", t.getText().toString());
+        intent.putExtra("NAME", getChild(t.getText().toString()));
         startActivity(intent);
+    }
+
+    public Child getChild(String name){
+        for(Child c : Children){
+            if(c.getname().equals(name)) return c;
+        }
+        return null;
     }
 
         // Action of ADD CHILD button
@@ -78,12 +102,18 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         String m = eT1.getText().toString();
                         int temp = Integer.parseInt(eT2.getText().toString());
-                        Children.add(new Child(m, temp));
+                        //Children.add(new Child(m, temp));
                         adapter.notifyDataSetChanged();
                         dialog.dismiss();
                     }
                 });
         alertDialog.show();
+    }
+
+    public void checkPermission() {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+        }
     }
 
     @Override
@@ -113,4 +143,17 @@ public class MainActivity extends AppCompatActivity {
     public void warning(View p) {
 
     }
+
+    @Override
+    public void onLocationChanged(Location location) { }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) { }
+
+    @Override
+    public void onProviderEnabled(String s) { }
+
+    @Override
+    public void onProviderDisabled(String s) { }
+
 }
