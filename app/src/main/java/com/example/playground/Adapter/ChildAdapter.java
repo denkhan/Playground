@@ -47,7 +47,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         Log.d("distance" , Double.toString(distance));
         if( distance <= 50) holder.child_layout.setBackgroundResource(R.color.colorClose);
         else holder.child_layout.setBackgroundResource(R.color.colorFar);
-        holder.child_distance.setText(Double.toString(distance));
+        holder.child_distance.setText(String.format("%.2f", distance) +  " m");
         holder.child_name.setText(mData.get(position).getname());
 
     }

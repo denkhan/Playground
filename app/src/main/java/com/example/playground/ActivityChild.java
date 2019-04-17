@@ -1,11 +1,18 @@
 package com.example.playground;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,7 +20,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ActivityChild extends AppCompatActivity implements SensorEventListener {
+public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     ImageView compass_img;
     double mAzimuth;
@@ -26,6 +33,8 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private float[] mLastMagnetometer = new float[3];
     private boolean mLastAccelerometerSet = false;
     private boolean mLastMagnetometerSet = false;
+    private LocationManager locationManager;
+    private TextView distance;
     private Parent parent;
     private Child child;
 
@@ -37,10 +46,26 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = findViewById(R.id.compass_img);
 
+
+        checkPermission();
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
+                500,
+                1, this);
+
+        distance = (TextView)findViewById(R.id.distance);
+
         Intent intent = getIntent();
 
         child = (Child) intent.getSerializableExtra("CHILD");
         parent = (Parent) intent.getSerializableExtra("PARENT");
+
+
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if(location!=null){
+            distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m");
+        }
+
 
         start();
     }
@@ -143,6 +168,12 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         }
     }
 
+    public void checkPermission() {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -165,5 +196,26 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         double x=Math.cos(latitude1)*Math.sin(latitude2)-Math.sin(latitude1)*Math.cos(latitude2)*Math.cos(longDiff);
 
         return (Math.toDegrees(Math.atan2(y, x))+360)%360;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        parent.setLocation(location);
+        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m");
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 }
