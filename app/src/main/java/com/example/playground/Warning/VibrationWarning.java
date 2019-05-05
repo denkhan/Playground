@@ -1,4 +1,4 @@
-package com.example.playground.Adapter;
+package com.example.playground.Warning;
 
 import android.content.Context;
 import android.os.Build;
