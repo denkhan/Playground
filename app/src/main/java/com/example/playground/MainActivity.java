@@ -3,13 +3,13 @@ package com.example.playground;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -17,30 +17,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
+import com.example.playground.Warning.SoundWarning;
+import com.example.playground.Warning.VibrationWarning;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
     ChildAdapter adapter;
+    Parent parent;
     ArrayList<Child> Children = new ArrayList<>();
+    private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
-    Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -49,19 +49,40 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         checkPermission();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
+                500,
+                1, this);
+
+
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if(location!=null){
+            createGhostChild(location);
+        }
+
+    }
+        // Action when clicking on a child
+    public void openChild(View v){
+        Intent intent = new Intent(getBaseContext(), ActivityChild.class);
+        TextView t = (TextView)v.findViewById(R.id.child_name);
+        intent.putExtra("CHILD", getChild(t.getText().toString()));
+        intent.putExtra("PARENT", parent);
+        startActivity(intent);
+    }
+
+    public void createGhostChild(Location location){
+        parent = new Parent(location);
 
         Location cLocation = new Location(location);
         cLocation.setLatitude(cLocation.getLatitude()+0.001);
         cLocation.setLongitude(cLocation.getLongitude()+0.001);
         // data to populate the RecyclerView with
-        Children.add(new Child("Alice",cLocation, location));
+        Children.add(new Child("Alice",cLocation));
 
         Location bLocation = new Location(location);
         bLocation.setLatitude(bLocation.getLatitude()-0.0003);
         bLocation.setLongitude(bLocation.getLongitude()-0.0003);
         // data to populate the RecyclerView with
-        Children.add(new Child("Bob",bLocation, location));
+        Children.add(new Child("Bob",bLocation));
 
 
         // set up the RecyclerView
@@ -69,14 +90,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ChildAdapter(this, Children, location);
         recyclerView.setAdapter(adapter);
-
-    }
-        // Action when clicking on a child
-    public void openChild(View v){
-        Intent intent = new Intent(getBaseContext(), ActivityChild.class);
-        TextView t = (TextView)v.findViewById(R.id.child_name);
-        intent.putExtra("NAME", getChild(t.getText().toString()));
-        startActivity(intent);
     }
 
     public Child getChild(String name){
@@ -141,11 +154,36 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning(View p) {
-
+        warnings[0] = new SoundWarning(this);
+        warnings[1] = new VibrationWarning(this);
+        warnings[0].execute();
+        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        else {
+            warnings[1].execute();
+        }
+    }
+    public void warning_off(View p) {
+        //warnings[0].cancel();
+        warnings[0].cancel();
+        warnings[1].cancel();
+        /*for (AsyncWarning w : warnings) {
+            w.terminate();
+        }*/
     }
 
     @Override
-    public void onLocationChanged(Location location) { }
+    public void onLocationChanged(Location location) {
+        if(parent==null){
+            createGhostChild(location);
+        }else {
+            parent.setLocation(location);
+            adapter.setLoc(location);
+            adapter.notifyDataSetChanged();
+        }
+    }
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) { }
