@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,8 +46,16 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         double distance =  mData.get(position).distanceBetween(location);
         Log.d("distance" , Double.toString(distance));
-        if( distance <= 50) holder.child_layout.setBackgroundResource(R.color.colorClose);
-        else holder.child_layout.setBackgroundResource(R.color.colorFar);
+        if( distance <= 50){
+            holder.child_layout.setBackgroundResource(R.color.colorClose);
+            holder.child_name.setTextColor(Color.parseColor("#333333"));
+            holder.child_distance.setTextColor(Color.parseColor("#333333"));
+        }
+        else {
+            holder.child_layout.setBackgroundResource(R.color.colorFar);
+            holder.child_name.setTextColor(Color.WHITE);
+            holder.child_distance.setTextColor(Color.WHITE);
+        }
         holder.child_distance.setText(String.format("%.2f", distance) +  " m");
         holder.child_name.setText(mData.get(position).getname());
 

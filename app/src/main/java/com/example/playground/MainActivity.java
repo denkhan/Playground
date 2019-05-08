@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -30,6 +31,7 @@ import com.example.playground.Warning.SoundWarning;
 import com.example.playground.Warning.VibrationWarning;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     ArrayList<Child> Children = new ArrayList<>();
     private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
+    Location myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
 
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        myLocation = location;
         if(location!=null){
             createGhostChild(location);
         }
@@ -83,6 +87,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         bLocation.setLongitude(bLocation.getLongitude()-0.0003);
         // data to populate the RecyclerView with
         Children.add(new Child("Bob",bLocation));
+
+        Location dLocation = new Location(location);
+        dLocation.setLatitude(dLocation.getLatitude()-0.0003);
+        dLocation.setLongitude(dLocation.getLongitude()+0.0003);
+        // data to populate the RecyclerView with
+        Children.add(new Child("Charlie",dLocation));
+
 
 
         // set up the RecyclerView
@@ -114,7 +125,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String m = eT1.getText().toString();
-                        int temp = Integer.parseInt(eT2.getText().toString());
+                        //int temp = Integer.parseInt(eT2.getText().toString());
+                        Location l = new Location(myLocation);
+                        double random = new Random().nextInt(200)-100;
+                        l.setLatitude(l.getLatitude()+random/100000);
+                        random = new Random().nextInt(200)-100;
+                        l.setLongitude(l.getLongitude()-random/100000);
+                        Children.add(new Child(m,l));
                         //Children.add(new Child(m, temp));
                         adapter.notifyDataSetChanged();
                         dialog.dismiss();
@@ -176,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onLocationChanged(Location location) {
+        myLocation = location;
         if(parent==null){
             createGhostChild(location);
         }else {

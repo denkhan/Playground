@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ActivityChild">
+    tools:context=".ActivityChild"
+    android:background="#CBEFDE">
 
     <TextView
         android:id="@+id/distance"
@@ -16,7 +17,8 @@
         android:layout_marginRight="8dp"
         android:layout_marginBottom="24dp"
         android:text="0 m"
-        android:textSize="32dp"
+        android:textSize="40dp"
+        style="@style/textStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
