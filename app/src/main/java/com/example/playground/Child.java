@@ -1,11 +1,14 @@
 package com.example.playground;
 
 import android.location.Location;
+import android.os.Build;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toolbar;
 
 import java.io.Serializable;
 
-public class Child implements Serializable {
+public class Child extends AppCompatActivity implements Serializable {
     private String name;
 
     private double pLat;

@@ -43,6 +43,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
 
+
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = findViewById(R.id.compass_img);
 
@@ -60,6 +61,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         child = (Child) intent.getSerializableExtra("CHILD");
         parent = (Parent) intent.getSerializableExtra("PARENT");
 
+        getSupportActionBar().setTitle(child.getname());
 
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
