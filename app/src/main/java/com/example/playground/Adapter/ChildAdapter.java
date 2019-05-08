@@ -10,12 +10,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.playground.Child;
 import com.example.playground.R;
 
 import java.util.List;
+import java.util.Random;
 
 public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> {
 
@@ -45,7 +47,20 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         double distance =  mData.get(position).distanceBetween(location);
-        Log.d("distance" , Double.toString(distance));
+        int rand = new Random().nextInt(8)+1;
+        if(rand == 1) holder.child_picture.setImageResource(R.drawable.one);
+        else if(rand == 2) holder.child_picture.setImageResource(R.drawable.two);
+        else if(rand == 3) holder.child_picture.setImageResource(R.drawable.three);
+        else if(rand == 4) holder.child_picture.setImageResource(R.drawable.four);
+        else if(rand == 5) holder.child_picture.setImageResource(R.drawable.five);
+        else if(rand == 6) holder.child_picture.setImageResource(R.drawable.six);
+        else if(rand == 7) holder.child_picture.setImageResource(R.drawable.seven);
+        else if(rand == 8) holder.child_picture.setImageResource(R.drawable.eight);
+        else if(rand == 9) holder.child_picture.setImageResource(R.drawable.nine);
+
+
+
+
         if( distance <= 50){
             holder.child_layout.setBackgroundResource(R.color.colorClose);
             holder.child_name.setTextColor(Color.parseColor("#333333"));
@@ -72,6 +87,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView child_name;
         TextView child_distance;
+        ImageView child_picture;
         ConstraintLayout child_layout;
 
         ViewHolder(View itemView) {
@@ -79,6 +95,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             child_layout = itemView.findViewById(R.id.child_layout);
             child_distance = itemView.findViewById(R.id.child_distance);
             child_name = itemView.findViewById(R.id.child_name);
+            child_picture = itemView.findViewById(R.id.imageView2);
         }
     }
 }
