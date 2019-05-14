@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playground.Filesystem.ChildManager;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
 import com.example.playground.Warning.SoundWarning;
@@ -70,24 +71,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void createGhostChild(Location location){
         parent = new Parent(location);
+        Children = new ArrayList<>();
 
         Location cLocation = new Location(location);
         cLocation.setLatitude(cLocation.getLatitude()+0.001);
         cLocation.setLongitude(cLocation.getLongitude()+0.001);
         // data to populate the RecyclerView with
-        Children.add(new Child("Alice",cLocation));
+        Child alice = ChildManager.database.get("child1");
+        alice.setPos(cLocation);
+        Children.add(alice);
 
         Location bLocation = new Location(location);
         bLocation.setLatitude(bLocation.getLatitude()-0.0003);
         bLocation.setLongitude(bLocation.getLongitude()-0.0003);
         // data to populate the RecyclerView with
-        Children.add(new Child("Bob",bLocation));
+        Child bob = ChildManager.database.get("child2");
+        bob.setPos(bLocation);
+        Children.add(bob);
 
         Location dLocation = new Location(location);
         dLocation.setLatitude(dLocation.getLatitude()-0.0003);
         dLocation.setLongitude(dLocation.getLongitude()+0.0003);
         // data to populate the RecyclerView with
-        Children.add(new Child("Charlie",dLocation));
+        Child charlie = ChildManager.database.get("child3");
+        charlie.setPos(dLocation);
+        Children.add(charlie);
 
 
 
@@ -126,7 +134,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         l.setLatitude(l.getLatitude()+random/100000);
                         random = new Random().nextInt(200)-100;
                         l.setLongitude(l.getLongitude()-random/100000);
-                        Children.add(new Child(m,l));
+                        Child child = ChildManager.database.get(m);
+                        child.setPos(l);
+                        Children.add(child);
                         //Children.add(new Child(m, temp));
                         adapter.notifyDataSetChanged();
                         dialog.dismiss();

@@ -13,17 +13,23 @@ public class Child extends AppCompatActivity implements Serializable {
 
     private double cLat;
     private double cLon;
+    private int image;
 
-    public Child(String name, Location location){
+    public Child(String name, int image){
         this.name = name;
+        this.image = image;
         //this.distance = distance;
-        cLat = location.getLatitude();
-        cLon = location.getLongitude();
     }
 
     public double getcLat(){return cLat; }
     public double getcLon(){return cLon; }
     public String getname(){return name; }
+    public int getImage() {return image;}
+
+    public void setPos (Location location) {
+        cLat = location.getLatitude();
+        cLon = location.getLongitude();
+    }
 
     public double distanceBetween(Location l){
         final int R = 6371; // Radius of the earth

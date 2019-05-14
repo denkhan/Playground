@@ -1,6 +1,7 @@
 package com.example.playground.Adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
 import android.support.constraint.ConstraintLayout;
@@ -24,12 +25,14 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     private List<Child> mData;
     private LayoutInflater mInflater;
     private Location location;
+    private Context context;
 
     // data is passed into the constructor
     public ChildAdapter(Context context, List<Child> data, Location l) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this.location = l;
+        this.context = context;
     }
 
     // inflates the row layout from xml when needed
@@ -47,7 +50,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         double distance =  mData.get(position).distanceBetween(location);
-        int rand = new Random().nextInt(8)+1;
+        /*int rand = new Random().nextInt(8)+1;
         if(rand == 1) holder.child_picture.setImageResource(R.drawable.one);
         else if(rand == 2) holder.child_picture.setImageResource(R.drawable.two);
         else if(rand == 3) holder.child_picture.setImageResource(R.drawable.three);
@@ -57,7 +60,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         else if(rand == 7) holder.child_picture.setImageResource(R.drawable.seven);
         else if(rand == 8) holder.child_picture.setImageResource(R.drawable.eight);
         else if(rand == 9) holder.child_picture.setImageResource(R.drawable.nine);
-
+        */
 
 
 
@@ -72,8 +75,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             holder.child_distance.setTextColor(Color.WHITE);
         }
         holder.child_distance.setText((int)distance +  " m");
+        holder.child_picture.setImageResource(mData.get(position).getImage());
         holder.child_name.setText(mData.get(position).getname());
-
     }
 
     // total number of rows
