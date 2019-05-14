@@ -11,8 +11,6 @@ import java.io.Serializable;
 public class Child extends AppCompatActivity implements Serializable {
     private String name;
 
-    private double pLat;
-    private double pLon;
     private double cLat;
     private double cLon;
 

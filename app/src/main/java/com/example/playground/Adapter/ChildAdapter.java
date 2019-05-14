@@ -71,7 +71,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             holder.child_name.setTextColor(Color.WHITE);
             holder.child_distance.setTextColor(Color.WHITE);
         }
-        holder.child_distance.setText(String.format("%.2f", distance) +  " m");
+        holder.child_distance.setText((int)distance +  " m");
         holder.child_name.setText(mData.get(position).getname());
 
     }
