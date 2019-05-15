@@ -12,7 +12,7 @@ public class VibrationWarning extends AsyncWarning {
     private Vibrator haptic;
     private Context context;
     private VibrationWarning next;
-    private boolean terminated = false;
+    private static boolean terminated;
 
     public VibrationWarning(Context context) {
         haptic = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
@@ -36,6 +36,10 @@ public class VibrationWarning extends AsyncWarning {
 
     protected void callback() {
 
+    }
+
+    public boolean running() {
+        return terminated;
     }
 
     public boolean cancel() {

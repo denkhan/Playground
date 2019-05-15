@@ -64,7 +64,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
 
 
 
-        if( distance <= 50){
+        if(mData.get(position).inRange(location)){
             holder.child_layout.setBackgroundResource(R.color.colorClose);
             holder.child_name.setTextColor(Color.parseColor("#333333"));
             holder.child_distance.setTextColor(Color.parseColor("#333333"));

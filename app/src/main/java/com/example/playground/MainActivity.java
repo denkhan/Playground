@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     ChildAdapter adapter;
     Parent parent;
-    ArrayList<Child> Children = new ArrayList<>();
     private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
     Location myLocation;
@@ -58,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         checkLocationPermission();
 
+        warnings[0] = new SoundWarning(this);
+        warnings[1] = new VibrationWarning(this);
     }
 
         // Action when clicking on a child
@@ -71,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void createGhostChild(Location location){
         parent = new Parent(location);
-        Children = new ArrayList<>();
 
         Location cLocation = new Location(location);
         cLocation.setLatitude(cLocation.getLatitude()+0.001);
@@ -79,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
-        Children.add(alice);
+        alice.setAllowedDistance(50);
+        ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);
         bLocation.setLatitude(bLocation.getLatitude()-0.0003);
@@ -87,7 +88,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child bob = ChildManager.database.get("child2");
         bob.setPos(bLocation);
-        Children.add(bob);
+        bob.setAllowedDistance(60);
+        ChildManager.registerChild("child2");
 
         Location dLocation = new Location(location);
         dLocation.setLatitude(dLocation.getLatitude()-0.0003);
@@ -95,19 +97,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child charlie = ChildManager.database.get("child3");
         charlie.setPos(dLocation);
-        Children.add(charlie);
+        charlie.setAllowedDistance(100);
+        ChildManager.registerChild("child3");
 
 
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.rv_child);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ChildAdapter(this, Children, location);
+        adapter = new ChildAdapter(this, ChildManager.register, location);
         recyclerView.setAdapter(adapter);
     }
 
     public Child getChild(String name){
-        for(Child c : Children){
+        for(Child c : ChildManager.register){
             if(c.getname().equals(name)) return c;
         }
         return null;
@@ -139,10 +142,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         l.setLongitude(l.getLongitude()-random/100000);
                         Child child = ChildManager.database.get(m);
                         child.setPos(l);
-                        Children.add(child);
-                        //Children.add(new Child(m, temp));
-                        adapter.notifyDataSetChanged();
-                        dialog.dismiss();
+                        int result = ChildManager.registerChild(m);
+                        if (result == 1) {
+                            child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
+                            //Children.add(new Child(m, temp));
+                            adapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                        } else if (result == -1) {
+                            // user doesn't exist in the database, do something
+                        } else {
+                            // child already registered
+                        }
                     }
                 });
         alertDialog.show();
@@ -241,15 +251,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning(View p) {
-        warnings[0] = new SoundWarning(this);
-        warnings[1] = new VibrationWarning(this);
-        warnings[0].execute();
-        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
-            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (!warnings[0].running()) {
+            warnings[0] = new SoundWarning(this);
+            warnings[0].execute();
         }
-        else {
-            warnings[1].execute();
+        if (!warnings[1].running()) {
+            warnings[1] = new VibrationWarning(this);
+            //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+                warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            else {
+                warnings[1].execute();
+            }
         }
     }
     public void warning_off(View p) {
