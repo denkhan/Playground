@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
-        alice.setAllowedDistance(150);
+        alice.setAllowedDistance(100);
         ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);
@@ -301,8 +301,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void warning() {
         warnings[0] = new SoundWarning(this);
-        warnings[0].execute();
         warnings[1] = new VibrationWarning(this);
+
+        warnings[0].execute();
         //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
             warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -312,12 +313,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
     public void warning_off() {
-        //warnings[0].cancel();
-        warnings[0].cancel();
-        warnings[1].cancel();
-        /*for (AsyncWarning w : warnings) {
-            w.terminate();
-        }*/
+        for (AsyncWarning warn : warnings) {
+            if (warn != null) {
+                warn.cancel();
+            }
+        }
     }
 
     public void stopWarnings() {
