@@ -11,6 +11,7 @@ import java.util.Date;
 public class VibrationFeedback extends VibrationWarning {
 
     private int vibrateTime = 500;
+    private int tempTime = 500;
     private static boolean running;
 
     public VibrationFeedback(Context context) {
@@ -37,12 +38,13 @@ public class VibrationFeedback extends VibrationWarning {
                     haptic.vibrate(vibrateTime);
                 }
                 while ((new Date().getTime() - timeBefore) < 2 * vibrateTime && running) ;
+                vibrateTime = tempTime;
             }
         }
     }
 
     public void setVibrateTime(int time){
-        vibrateTime = time;
+        tempTime = time;
     }
 
     public boolean cancel() {
