@@ -41,6 +41,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private Parent parent;
     private Child child;
     VibrationWarning v;
+    boolean warningOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,20 +131,20 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     public void warning(int time) {
 
         //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-
-        try {
-            Log.d("BUZZ", ""+time);
-            v.setVibrateTime(time);
-            v.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            v.setVibrateTime(500);
-
-        } catch (Exception e) {
+        v.setVibrateTime(time);
+        if(!warningOn){
+            try {
+                v.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } catch (Exception e) {}
         }
+        warningOn = true;
+        v.setVibrateTime(500);
     }
 
     public void warning_off() {
         //warnings[0].cancel();
         v.cancel();
+        warningOn = false;
         /*for (AsyncWarning w : warnings) {
             w.terminate();
         }*/
