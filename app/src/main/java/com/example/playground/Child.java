@@ -26,6 +26,7 @@ public class Child extends AppCompatActivity implements Serializable {
     public double getcLon(){return cLon; }
     public String getname(){return name; }
     public int getImage() {return image;}
+    public int getAllowedDistance() {return allowed_distance;}
 
     public void setAllowedDistance(int distance) {
         allowed_distance = distance;
