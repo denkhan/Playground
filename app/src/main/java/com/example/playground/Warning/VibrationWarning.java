@@ -19,7 +19,7 @@ public class VibrationWarning extends AsyncWarning {
         this.context = context;
     }
 
-    protected void action() {
+    public void action() {
         // source: https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate
         while(!terminated) {
             long timeBefore = new Date().getTime();
