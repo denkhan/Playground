@@ -137,17 +137,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         random = new Random().nextInt(200)-100;
                         l.setLongitude(l.getLongitude()-random/100000);
                         Child child = ChildManager.database.get(m);
-                        child.setPos(l);
-                        int result = ChildManager.registerChild(m);
-                        if (result == 1) {
-                            child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
-                            //Children.add(new Child(m, temp));
-                            adapter.notifyDataSetChanged();
-                            dialog.dismiss();
-                        } else if (result == -1) {
-                            // user doesn't exist in the database, do something
-                        } else {
-                            // child already registered
+                        if (child != null) {
+                            child.setPos(l);
+                            int result = ChildManager.registerChild(m);
+                            if (result == 1) {
+                                child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
+                                //Children.add(new Child(m, temp));
+                                adapter.notifyDataSetChanged();
+                                dialog.dismiss();
+                            } else if (result == -1) {
+                                // user doesn't exist in the database, do something
+                            } else {
+                                // child already registered
+                            }
                         }
                     }
                 });
