@@ -19,5 +19,6 @@ public abstract class AsyncWarning extends AsyncTask<Void, Void, String> {
     protected abstract void action();
     protected abstract void callback();
     public abstract boolean cancel();
+    public abstract boolean running();
 }
 

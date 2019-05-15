@@ -14,6 +14,7 @@ public class Child extends AppCompatActivity implements Serializable {
     private double cLat;
     private double cLon;
     private int image;
+    private int allowed_distance;
 
     public Child(String name, int image){
         this.name = name;
@@ -26,9 +27,20 @@ public class Child extends AppCompatActivity implements Serializable {
     public String getname(){return name; }
     public int getImage() {return image;}
 
+    public void setAllowedDistance(int distance) {
+        allowed_distance = distance;
+    }
+
     public void setPos (Location location) {
         cLat = location.getLatitude();
         cLon = location.getLongitude();
+    }
+
+    public boolean inRange(Location l) {
+        if (distanceBetween(l) < allowed_distance) {
+            return true;
+        }
+        return false;
     }
 
     public double distanceBetween(Location l){

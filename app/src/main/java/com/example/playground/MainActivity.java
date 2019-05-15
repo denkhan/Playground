@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         checkLocationPermission();
 
+        warnings[0] = new SoundWarning(this);
+        warnings[1] = new VibrationWarning(this);
     }
 
         // Action when clicking on a child
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
+        alice.setAllowedDistance(50);
         ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child bob = ChildManager.database.get("child2");
         bob.setPos(bLocation);
+        bob.setAllowedDistance(60);
         ChildManager.registerChild("child2");
 
         Location dLocation = new Location(location);
@@ -93,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child charlie = ChildManager.database.get("child3");
         charlie.setPos(dLocation);
+        charlie.setAllowedDistance(100);
         ChildManager.registerChild("child3");
 
 
@@ -136,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         child.setPos(l);
                         int result = ChildManager.registerChild(m);
                         if (result == 1) {
+                            child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
                             //Children.add(new Child(m, temp));
                             adapter.notifyDataSetChanged();
                             dialog.dismiss();
@@ -242,15 +248,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning(View p) {
-        warnings[0] = new SoundWarning(this);
-        warnings[1] = new VibrationWarning(this);
-        warnings[0].execute();
-        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
-            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (!warnings[0].running()) {
+            warnings[0] = new SoundWarning(this);
+            warnings[0].execute();
         }
-        else {
-            warnings[1].execute();
+        if (!warnings[1].running()) {
+            warnings[1] = new VibrationWarning(this);
+            //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+                warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            else {
+                warnings[1].execute();
+            }
         }
     }
     public void warning_off(View p) {

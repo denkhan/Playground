@@ -10,7 +10,7 @@ public class SoundWarning extends AsyncWarning {
     private MediaPlayer mp;
     private Context context;
     private SoundWarning next;
-    private boolean terminated = false;
+    private static boolean terminated;
 
     public SoundWarning(Context context) {
         mp = MediaPlayer.create(context, R.raw.warning);
@@ -28,6 +28,10 @@ public class SoundWarning extends AsyncWarning {
 
     protected void callback() {
 
+    }
+
+    public boolean running() {
+        return terminated;
     }
 
     public boolean cancel() {
