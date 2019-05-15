@@ -12,6 +12,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +25,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.playground.Warning.VibrationWarning;
+
+import java.util.Date;
 
 public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {
 
@@ -42,14 +47,14 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private Child child;
     VibrationWarning v;
     boolean warningOn = false;
+    Vibrator vibe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
 
-        v = new VibrationWarning(this);
-
+        vibe = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -110,17 +115,26 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         //mAzimuth = Math.round(mAzimuth);
 
         compass_img.setRotation((float)-mAzimuth);
-        Log.d("AZZ", ""+mAzimuth);
 
-        if (mAzimuth <= 250 && mAzimuth >= 110) warning(1000);
-        else if (mAzimuth < 270 && mAzimuth > 90) warning(750);
-        else if (mAzimuth <= 290 && mAzimuth > 70) warning(500);
-        else if (mAzimuth <= 310 && mAzimuth > 50) warning(300);
-        else if (mAzimuth <= 330 && mAzimuth > 30) warning(200);
-        else if (mAzimuth <= 350 && mAzimuth > 10) warning(100);
-        else {
-            warning_off();
-        };
+        if (mAzimuth <= 250 && mAzimuth >= 110) vibrate(1000);
+        else if (mAzimuth < 270 && mAzimuth > 90) vibrate(800);
+        else if (mAzimuth <= 290 && mAzimuth > 70) vibrate(600);
+        else if (mAzimuth <= 310 && mAzimuth > 50) vibrate(400);
+        else if (mAzimuth <= 330 && mAzimuth > 30) vibrate(200);
+        else if (mAzimuth <= 350 && mAzimuth > 10) vibrate(100);
+        else { };
+    }
+
+    private void vibrate(int time){
+//        long timeBefore = new Date().getTime();
+//        vibe.vibrate(time);
+//        while ((new Date().getTime() - timeBefore) < 1000) ;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibe.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            vibe.vibrate(time);
+        }
     }
 
     @Override
@@ -128,27 +142,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
     }
 
-    public void warning(int time) {
-
-        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        v.setVibrateTime(time);
-        if(!warningOn){
-            try {
-                v.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } catch (Exception e) {}
-        }
-        warningOn = true;
-        v.setVibrateTime(500);
-    }
-
-    public void warning_off() {
-        //warnings[0].cancel();
-        v.cancel();
-        warningOn = false;
-        /*for (AsyncWarning w : warnings) {
-            w.terminate();
-        }*/
-    }
 
     public void start() {
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null) {
@@ -158,13 +151,13 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
             else {
                 mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
                 mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-                haveSensor = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
-                haveSensor2 = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
+                haveSensor = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+                haveSensor2 = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
             }
         }
         else{
             mRotationV = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-            haveSensor = mSensorManager.registerListener(this, mRotationV, SensorManager.SENSOR_DELAY_UI);
+            haveSensor = mSensorManager.registerListener(this, mRotationV, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -184,7 +177,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mSensorManager.unregisterListener(this,mAccelerometer);
         mSensorManager.unregisterListener(this,mMagnetometer);
         mSensorManager.unregisterListener(this,mRotationV);
-        warning_off();
     }
 
     public void checkPermission() {
