@@ -21,6 +21,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Warning.VibrationWarning;
 
 public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {

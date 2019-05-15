@@ -27,20 +27,13 @@ public class VibrationWarning extends AsyncWarning {
             while (running) {
                 long timeBefore = new Date().getTime();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                haptic.vibrate(VibrationEffect.createOneShot(vibrateTime, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                //deprecated in API 26
-                haptic.vibrate(vibrateTime);
-            }
-            while ((new Date().getTime() - timeBefore) < 1000) ;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    haptic.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    haptic.vibrate(VibrationEffect.createOneShot(vibrateTime, VibrationEffect.DEFAULT_AMPLITUDE));
                 } else {
                     //deprecated in API 26
-                    haptic.vibrate(500);
+                    haptic.vibrate(vibrateTime);
                 }
-                while ((new Date().getTime() - timeBefore) < 1000) ;
+                while ((new Date().getTime() - timeBefore) < 2 * vibrateTime && running) ;
             }
         }
     }
