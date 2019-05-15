@@ -19,8 +19,13 @@ import java.util.HashMap;
 public class ChildManager {
 
     public static HashMap<String, Child> database;
+    private static HashMap<String, Child> registered_children;
+    public static ArrayList<Child> register;
     static {
         database = new HashMap<>();
+        registered_children = new HashMap<>();
+        register = new ArrayList<>();
+
         database.put("child1", new Child("Alice", R.drawable.one));
         database.put("child2", new Child("Bob", R.drawable.two));
         database.put("child3", new Child("Charlie", R.drawable.three));
@@ -31,5 +36,16 @@ public class ChildManager {
         database.put("child8", new Child("Charmander", R.drawable.eight));
         database.put("child9", new Child("Pikachu", R.drawable.nine));
         database.put("child10", new Child("Name", R.drawable.ten));
+    }
+
+    public static int registerChild(String username) {
+        if (registered_children.get(username) != null && database.get(username) != null) {
+            return 0;
+        } else if (database.get(username) != null) {
+            registered_children.put(username, database.get(username));
+            register.add(database.get(username));
+            return 1;
+        }
+        return -1;
     }
 }
