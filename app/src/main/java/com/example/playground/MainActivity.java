@@ -41,10 +41,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     ChildAdapter adapter;
     Parent parent;
+    private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
     Location myLocation;
-    private boolean warningOn;
-    private AsyncWarning[] warnings = new AsyncWarning[2];
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
 
@@ -57,10 +56,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         setSupportActionBar(toolbar);
 
         checkLocationPermission();
-
-        warnings[0] = new SoundWarning(this);
-        warnings[1] = new VibrationWarning(this);
-
     }
 
         // Action when clicking on a child
@@ -69,8 +64,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         TextView t = (TextView)v.findViewById(R.id.child_name);
         intent.putExtra("CHILD", getChild(t.getText().toString()));
         intent.putExtra("PARENT", parent);
-        warning_off();
         startActivity(intent);
+        stopWarnings();
+        warning_off();
     }
 
     public void createGhostChild(Location location){
@@ -82,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
-        alice.setAllowedDistance(140);
+        alice.setAllowedDistance(100);
         ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);
@@ -110,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ChildAdapter(this, ChildManager.register, location);
         recyclerView.setAdapter(adapter);
-        checkWarning();
     }
 
     public Child getChild(String name){
@@ -185,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if(location!=null){
                 createGhostChild(location);
             }        }
+        resumeWarnings();
     }
 
     public boolean checkLocationPermission() {
@@ -251,6 +247,35 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         return super.onOptionsItemSelected(item);
     }
 
+    public void warning() {
+        warnings[0] = new SoundWarning(this);
+        warnings[0].execute();
+        warnings[1] = new VibrationWarning(this);
+        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        else {
+            warnings[1].execute();
+        }
+    }
+    public void warning_off() {
+        //warnings[0].cancel();
+        warnings[0].cancel();
+        warnings[1].cancel();
+        /*for (AsyncWarning w : warnings) {
+            w.terminate();
+        }*/
+    }
+
+    public void stopWarnings() {
+        AsyncWarning.stop();
+    }
+
+    public void resumeWarnings() {
+        AsyncWarning.resume();
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
@@ -262,42 +287,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             adapter.setLoc(location);
             adapter.notifyDataSetChanged();
         }
-        checkWarning();
-    }
-
-    private void checkWarning(){
-        boolean inRange = true;
-        for(Child c : ChildManager.register){
-            if(!c.inRange(myLocation)){
-                inRange = false;
-                break;
-            }
-        }
-        if(!inRange) warning();
-        else warning_off();
-    }
-
-    public void warning() {
-
-        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        if(!warningOn) {
-            try {
-                warnings[0].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-            } catch (Exception e) {
-            }
-            warningOn = true;
-        }
-    }
-    public void warning_off() {
-        //warnings[0].cancel();
-        warnings[0].cancel();
-        warnings[1].cancel();
-        warningOn = false;
-        /*for (AsyncWarning w : warnings) {
-            w.terminate();
-        }*/
     }
 
     @Override

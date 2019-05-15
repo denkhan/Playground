@@ -10,7 +10,7 @@ public class SoundWarning extends AsyncWarning {
     private MediaPlayer mp;
     private Context context;
     private SoundWarning next;
-    private static boolean terminated;
+    private static boolean running;
 
     public SoundWarning(Context context) {
         mp = MediaPlayer.create(context, R.raw.warning);
@@ -18,29 +18,24 @@ public class SoundWarning extends AsyncWarning {
     }
 
     public void action() {
-        while(!terminated) {
-            mp.start();
-            while (mp.isPlaying() && !terminated) ;
-            //mp.stop();
+        if (!running) {
+            running = true;
+            while (running) {
+                mp.start();
+                while (mp.isPlaying() && running) ;
+                //mp.stop();
+            }
+            mp.release();
         }
-        mp.release();
     }
 
     protected void callback() {
 
     }
 
-    public boolean running() {
-        return terminated;
-    }
-
     public boolean cancel() {
-        if (next != null) {
-            terminated = next.cancel(true);
-        } else {
-            terminated = true;
-        }
-        return terminated;
+        running = false;
+        return running;
     }
 
 }

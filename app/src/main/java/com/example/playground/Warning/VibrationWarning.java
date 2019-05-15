@@ -11,9 +11,9 @@ public class VibrationWarning extends AsyncWarning {
 
     private Vibrator haptic;
     private Context context;
-    private VibrationWarning next;
     private static boolean terminated;
     private int vibrateTime = 500;
+    private static boolean running;
 
     public VibrationWarning(Context context) {
         haptic = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
@@ -22,8 +22,10 @@ public class VibrationWarning extends AsyncWarning {
 
     public void action() {
         // source: https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate
-        while(!terminated) {
-            long timeBefore = new Date().getTime();
+        if (!running) {
+            running = true;
+            while (running) {
+                long timeBefore = new Date().getTime();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 haptic.vibrate(VibrationEffect.createOneShot(vibrateTime, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -32,6 +34,14 @@ public class VibrationWarning extends AsyncWarning {
                 haptic.vibrate(vibrateTime);
             }
             while ((new Date().getTime() - timeBefore) < 1000) ;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    haptic.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    //deprecated in API 26
+                    haptic.vibrate(500);
+                }
+                while ((new Date().getTime() - timeBefore) < 1000) ;
+            }
         }
     }
 
@@ -43,16 +53,8 @@ public class VibrationWarning extends AsyncWarning {
 
     }
 
-    public boolean running() {
-        return terminated;
-    }
-
     public boolean cancel() {
-        if (next != null) {
-            terminated = next.cancel(true);
-        } else {
-            terminated = true;
-        }
-        return terminated;
+        running = false;
+        return running;
     }
 }

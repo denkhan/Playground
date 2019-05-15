@@ -4,9 +4,13 @@ import android.os.AsyncTask;
 
 public abstract class AsyncWarning extends AsyncTask<Void, Void, String> {
 
+    private static boolean stopped;
+
     @Override
     protected String doInBackground(Void... params){
-        action();
+        if (!stopped) {
+            action();
+        }
         return "";
     }
 
@@ -16,9 +20,16 @@ public abstract class AsyncWarning extends AsyncTask<Void, Void, String> {
         callback();
     }
 
+    public static void stop() {
+        stopped = true;
+    }
+
+    public static void resume() {
+        stopped = false;
+    }
+
     public abstract void action();
     protected abstract void callback();
     public abstract boolean cancel();
-    public abstract boolean running();
 }
 
