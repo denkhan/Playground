@@ -17,7 +17,7 @@ public class SoundWarning extends AsyncWarning {
         this.context = context;
     }
 
-    protected void action() {
+    public void action() {
         while(!terminated) {
             mp.start();
             while (mp.isPlaying() && !terminated) ;
