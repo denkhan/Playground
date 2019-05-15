@@ -49,6 +49,9 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     VibrationWarning v;
     boolean warningOn = false;
     Vibrator vibe;
+    Thread thread;
+    int time = 0;
+    boolean vibrateOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +60,21 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         vibe = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 
+        thread = new Thread(){
+            @Override
+            public void run(){
+                while(true){
+                    try{
+                        if(!vibrateOn){
+                            vibrate(time);
+                            sleep(1000);
+                        }
+
+                    }catch (Exception e){}
+                }
+                }
+        };
+        thread.start();
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = findViewById(R.id.compass_img);
@@ -116,26 +134,25 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         //mAzimuth = Math.round(mAzimuth);
 
         compass_img.setRotation((float)-mAzimuth);
-
-        if (mAzimuth <= 250 && mAzimuth >= 110) vibrate(1000);
-        else if (mAzimuth < 270 && mAzimuth > 90) vibrate(800);
-        else if (mAzimuth <= 290 && mAzimuth > 70) vibrate(600);
-        else if (mAzimuth <= 310 && mAzimuth > 50) vibrate(400);
-        else if (mAzimuth <= 330 && mAzimuth > 30) vibrate(200);
-        else if (mAzimuth <= 350 && mAzimuth > 10) vibrate(100);
-        else { };
+        vibrateOn = true;
+        if (mAzimuth <= 250 && mAzimuth >= 110) time = 1000;
+        else if (mAzimuth < 270 && mAzimuth > 90) time = 800;
+        else if (mAzimuth <= 290 && mAzimuth > 70) time = 600;
+        else if (mAzimuth <= 310 && mAzimuth > 50) time = 400;
+        else if (mAzimuth <= 330 && mAzimuth > 30) time = 200;
+        else if (mAzimuth <= 350 && mAzimuth > 10) time = 100;
+        else { vibrateOn = false; }
     }
 
     private void vibrate(int time){
-//        long timeBefore = new Date().getTime();
-//        vibe.vibrate(time);
-//        while ((new Date().getTime() - timeBefore) < 1000) ;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibe.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
             //deprecated in API 26
             vibe.vibrate(time);
         }
+
+
     }
 
     @Override
