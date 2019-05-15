@@ -3,6 +3,8 @@ package com.example.playground;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.content.pm.PackageManager;
@@ -136,24 +138,52 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         l.setLatitude(l.getLatitude()+random/100000);
                         random = new Random().nextInt(200)-100;
                         l.setLongitude(l.getLongitude()-random/100000);
-                        Child child = ChildManager.database.get(m);
-                        if (child != null) {
+                        int result = ChildManager.registerChild(m);
+                        if (result == 1) {
+                            Child child = ChildManager.database.get(m);
                             child.setPos(l);
-                            int result = ChildManager.registerChild(m);
-                            if (result == 1) {
-                                child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
-                                //Children.add(new Child(m, temp));
-                                adapter.notifyDataSetChanged();
-                                dialog.dismiss();
-                            } else if (result == -1) {
-                                // user doesn't exist in the database, do something
-                            } else {
-                                // child already registered
-                            }
+                            child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
+                            //Children.add(new Child(m, temp));
+                            adapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                            userRegisteredMessage(m);
+                        } else if (result == -1) {
+                            // user doesn't exist in the database, do something
+                            userNotFoundMessage(m);
+                        } else {
+                            // child already registered
+                            userAlreadyRegisteredMessage(m);
                         }
                     }
                 });
         alertDialog.show();
+    }
+
+    private void userNotFoundMessage(String username) {
+        toastMessage("Account for : " + username + " was not found", 2000, Color.RED, Color.WHITE);
+    }
+
+    private void userAlreadyRegisteredMessage(String username) {
+        toastMessage("Account for : " + username + " is already registered", 2000, Color.GRAY, Color.WHITE);
+    }
+
+    private void userRegisteredMessage(String username) {
+        toastMessage("Account for : " + username + " is registered", 2000, Color.GREEN, Color.WHITE);
+    }
+
+    //source: https://stackoverflow.com/questions/31175601/how-can-i-change-default-toast-message-color-and-background-color-in-android
+    private void toastMessage(String message, int duration, int background_color, int text_color) {
+        Toast toast = Toast.makeText(this, message, duration);
+        View view = toast.getView();
+
+        //Gets the actual oval background of the Toast then sets the colour filter
+        view.getBackground().setColorFilter(background_color, PorterDuff.Mode.SRC_IN);
+
+        //Gets the TextView from the Toast so it can be editted
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(text_color);
+
+        toast.show();
     }
 
     public void checkPermission() {
