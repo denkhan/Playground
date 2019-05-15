@@ -8,13 +8,10 @@ import com.example.playground.R;
 public class SoundWarning extends AsyncWarning {
 
     private MediaPlayer mp;
-    private Context context;
-    private SoundWarning next;
     private static boolean running;
 
     public SoundWarning(Context context) {
         mp = MediaPlayer.create(context, R.raw.warning);
-        this.context = context;
     }
 
     public void action() {

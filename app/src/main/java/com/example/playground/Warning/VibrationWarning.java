@@ -10,13 +10,11 @@ import java.util.Date;
 public class VibrationWarning extends AsyncWarning {
 
     protected Vibrator haptic;
-    private Context context;
     private int vibrateTime = 500;
     private static boolean running;
 
     public VibrationWarning(Context context) {
         haptic = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
-        this.context = context;
     }
 
     public void action() {
@@ -35,10 +33,6 @@ public class VibrationWarning extends AsyncWarning {
                 while ((new Date().getTime() - timeBefore) < 2 * vibrateTime && running) ;
             }
         }
-    }
-
-    public void setVibrateTime(int time){
-        vibrateTime = time;
     }
 
     protected void callback() {

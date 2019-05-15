@@ -14,6 +14,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.Manifest;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -37,6 +39,7 @@ import com.example.playground.Warning.SoundWarning;
 import com.example.playground.Warning.VibrationWarning;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     LocationManager locationManager;
     Location myLocation;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-
+    protected Vibrator haptic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         setSupportActionBar(toolbar);
 
         checkLocationPermission();
+        haptic = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
     }
 
         // Action when clicking on a child
@@ -80,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
-        alice.setAllowedDistance(100);
+        alice.setAllowedDistance(150);
         ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);
@@ -139,13 +143,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         random = new Random().nextInt(200)-100;
                         l.setLongitude(l.getLongitude()-random/100000);
                         int result = ChildManager.registerChild(m);
+                        dialog.dismiss();
                         if (result == 1) {
                             Child child = ChildManager.database.get(m);
                             child.setPos(l);
                             child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
                             //Children.add(new Child(m, temp));
                             adapter.notifyDataSetChanged();
-                            dialog.dismiss();
                             userRegisteredMessage(m);
                         } else if (result == -1) {
                             // user doesn't exist in the database, do something
@@ -159,21 +163,37 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         alertDialog.show();
     }
 
+    private void vibrate(int time) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            haptic.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            haptic.vibrate(time);
+        }
+    }
+
     private void userNotFoundMessage(String username) {
-        toastMessage("Account for : " + username + " was not found", 2000, Color.RED, Color.WHITE);
+        toastMessage("Account for : " + username + " was not found", 15000, Color.RED, Color.WHITE);
+        vibrate(600);
     }
 
     private void userAlreadyRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is already registered", 2000, Color.GRAY, Color.WHITE);
+        toastMessage("Account for : " + username + " is already registered", 15000, Color.GRAY, Color.WHITE);
+        for (int i = 0; i < 2; i++) {
+            long timeBefore = new Date().getTime();
+            vibrate(150);
+            while ((new Date().getTime() - timeBefore) < 220) ;
+        }
     }
 
     private void userRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is registered", 2000, Color.GREEN, Color.WHITE);
+        toastMessage("Account for : " + username + " is registered", 15000, Color.GREEN, Color.WHITE);
+        vibrate(100);
     }
 
     //source: https://stackoverflow.com/questions/31175601/how-can-i-change-default-toast-message-color-and-background-color-in-android
     private void toastMessage(String message, int duration, int background_color, int text_color) {
-        Toast toast = Toast.makeText(this, message, duration);
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         View view = toast.getView();
 
         //Gets the actual oval background of the Toast then sets the colour filter
