@@ -4,14 +4,18 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.VibrationEffect;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.playground.Child;
@@ -63,22 +67,30 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         else if(rand == 9) holder.child_picture.setImageResource(R.drawable.nine);
         */
 
-
-
-        if(mData.get(position).inRange(location)){
+        if (mData.get(position).isActive()) {
+            holder.child_layout.setAlpha(1f);
+            if (mData.get(position).inRange(location)) {
+                holder.child_layout.setBackgroundResource(R.color.colorClose);
+                holder.child_name.setTextColor(Color.parseColor("#333333"));
+                holder.child_distance.setTextColor(Color.parseColor("#333333"));
+            } else {
+                holder.child_layout.setBackgroundResource(R.color.colorFar);
+                holder.child_name.setTextColor(Color.WHITE);
+                holder.child_distance.setTextColor(Color.WHITE);
+                ((MainActivity) context).warning();
+            }
+            holder.child_distance.setText((int) distance + " m");
+        } else {
             holder.child_layout.setBackgroundResource(R.color.colorClose);
+            holder.child_layout.setAlpha(0.5f);
             holder.child_name.setTextColor(Color.parseColor("#333333"));
             holder.child_distance.setTextColor(Color.parseColor("#333333"));
+            holder.child_distance.setText("");
         }
-        else {
-            holder.child_layout.setBackgroundResource(R.color.colorFar);
-            holder.child_name.setTextColor(Color.WHITE);
-            holder.child_distance.setTextColor(Color.WHITE);
-            ((MainActivity) context).warning();
-        }
-        holder.child_distance.setText((int)distance +  " m");
         holder.child_picture.setImageResource(mData.get(position).getImage());
+        holder.child_active.setChecked(mData.get(position).isActive());
         holder.child_name.setText(mData.get(position).getname());
+        holder.child_id.setText(mData.get(position).getUsername());
     }
 
     // total number of rows
@@ -94,6 +106,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         TextView child_distance;
         ImageView child_picture;
         ConstraintLayout child_layout;
+        Switch child_active;
+        TextView child_id;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -101,6 +115,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             child_distance = itemView.findViewById(R.id.child_distance);
             child_name = itemView.findViewById(R.id.child_name);
             child_picture = itemView.findViewById(R.id.imageView2);
+            child_active = itemView.findViewById(R.id.child_active);
+            child_id = itemView.findViewById(R.id.child_id);
         }
     }
 }

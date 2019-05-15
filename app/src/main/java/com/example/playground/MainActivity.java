@@ -16,6 +16,7 @@ import android.Manifest;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -28,7 +29,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,13 +69,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         // Action when clicking on a child
     public void openChild(View v){
-        Intent intent = new Intent(getBaseContext(), ActivityChild.class);
-        TextView t = (TextView)v.findViewById(R.id.child_name);
-        intent.putExtra("CHILD", getChild(t.getText().toString()));
-        intent.putExtra("PARENT", parent);
-        startActivity(intent);
-        stopWarnings();
-        warning_off();
+        Switch t1 = v.findViewById(R.id.child_active);
+        if (t1.isChecked()) {
+            Intent intent = new Intent(getBaseContext(), ActivityChild.class);
+            TextView t = (TextView) v.findViewById(R.id.child_name);
+            intent.putExtra("CHILD", getChild(t.getText().toString()));
+            intent.putExtra("PARENT", parent);
+            startActivity(intent);
+            stopWarnings();
+            warning_off();
+        }
+    }
+
+    public void activateChild(View v) {
+        String id = ((TextView)((ConstraintLayout)v.getParent()).findViewById(R.id.child_id)).getText().toString();
+        if (((Switch)v).isChecked()) {
+            ChildManager.database.get(id).activate(true);
+        } else {
+            ChildManager.database.get(id).activate(false);
+        }
+        adapter.notifyDataSetChanged();
     }
 
     public void createGhostChild(Location location){
@@ -84,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // data to populate the RecyclerView with
         Child alice = ChildManager.database.get("child1");
         alice.setPos(cLocation);
-        alice.setAllowedDistance(100);
+        alice.setAllowedDistance(150);
         ChildManager.registerChild("child1");
 
         Location bLocation = new Location(location);

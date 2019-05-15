@@ -15,10 +15,13 @@ public class Child extends AppCompatActivity implements Serializable {
     private double cLon;
     private int image;
     private int allowed_distance;
+    private boolean active;
+    private String username;
 
-    public Child(String name, int image){
+    public Child(String name, int image, String username){
         this.name = name;
         this.image = image;
+        this.username = username;
         //this.distance = distance;
     }
 
@@ -27,6 +30,12 @@ public class Child extends AppCompatActivity implements Serializable {
     public String getname(){return name; }
     public int getImage() {return image;}
     public int getAllowedDistance() {return allowed_distance;}
+    public boolean isActive() {return active;}
+    public String getUsername() {return username;}
+
+    public void activate(boolean active) {
+        this.active = active;
+    }
 
     public void setAllowedDistance(int distance) {
         allowed_distance = distance;
