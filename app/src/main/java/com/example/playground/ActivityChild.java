@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -19,6 +20,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.playground.Warning.VibrationWarning;
 
 public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {
 
@@ -37,11 +40,15 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private TextView distance;
     private Parent parent;
     private Child child;
+    VibrationWarning v;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
+
+        v = new VibrationWarning(this);
+
 
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -102,31 +109,44 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         //mAzimuth = Math.round(mAzimuth);
 
         compass_img.setRotation((float)-mAzimuth);
+        Log.d("AZZ", ""+mAzimuth);
 
-        String where = "NW";
-
-        if (mAzimuth >= 350 || mAzimuth <= 10)
-            where = "N";
-        if (mAzimuth < 350 && mAzimuth > 280)
-            where = "NW";
-        if (mAzimuth <= 280 && mAzimuth > 260)
-            where = "W";
-        if (mAzimuth <= 260 && mAzimuth > 190)
-            where = "SW";
-        if (mAzimuth <= 190 && mAzimuth > 170)
-            where = "S";
-        if (mAzimuth <= 170 && mAzimuth > 100)
-            where = "SE";
-        if (mAzimuth <= 100 && mAzimuth > 80)
-            where = "E";
-        if (mAzimuth <= 80 && mAzimuth > 10)
-            where = "NE";
-
+        if (mAzimuth <= 250 && mAzimuth >= 110) warning(1000);
+        else if (mAzimuth < 270 && mAzimuth > 90) warning(750);
+        else if (mAzimuth <= 290 && mAzimuth > 70) warning(500);
+        else if (mAzimuth <= 310 && mAzimuth > 50) warning(300);
+        else if (mAzimuth <= 330 && mAzimuth > 30) warning(200);
+        else if (mAzimuth <= 350 && mAzimuth > 10) warning(100);
+        else {
+            warning_off();
+        };
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    public void warning(int time) {
+
+        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+
+        try {
+            Log.d("BUZZ", ""+time);
+            v.setVibrateTime(time);
+            v.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            v.setVibrateTime(500);
+
+        } catch (Exception e) {
+        }
+    }
+
+    public void warning_off() {
+        //warnings[0].cancel();
+        v.cancel();
+        /*for (AsyncWarning w : warnings) {
+            w.terminate();
+        }*/
     }
 
     public void start() {
@@ -160,14 +180,10 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     }
 
     public void stop() {
-        if(haveSensor && haveSensor2){
-            mSensorManager.unregisterListener(this,mAccelerometer);
-            mSensorManager.unregisterListener(this,mMagnetometer);
-        }
-        else{
-            if(haveSensor)
-                mSensorManager.unregisterListener(this,mRotationV);
-        }
+        mSensorManager.unregisterListener(this,mAccelerometer);
+        mSensorManager.unregisterListener(this,mMagnetometer);
+        mSensorManager.unregisterListener(this,mRotationV);
+        warning_off();
     }
 
     public void checkPermission() {

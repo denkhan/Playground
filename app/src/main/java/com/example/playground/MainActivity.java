@@ -137,9 +137,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         String m = eT1.getText().toString();
                         //int temp = Integer.parseInt(eT2.getText().toString());
                         Location l = new Location(myLocation);
-                        if(l == null){
-                            Log.d("L EJ NULL", "HALLÅ");
-                        }
                         double random = new Random().nextInt(200)-100;
                         l.setLatitude(l.getLatitude()+random/100000);
                         random = new Random().nextInt(200)-100;

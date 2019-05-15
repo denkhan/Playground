@@ -13,6 +13,7 @@ public class VibrationWarning extends AsyncWarning {
     private Context context;
     private VibrationWarning next;
     private static boolean terminated;
+    private int vibrateTime = 500;
 
     public VibrationWarning(Context context) {
         haptic = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
@@ -25,13 +26,17 @@ public class VibrationWarning extends AsyncWarning {
             long timeBefore = new Date().getTime();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                haptic.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                haptic.vibrate(VibrationEffect.createOneShot(vibrateTime, VibrationEffect.DEFAULT_AMPLITUDE));
             } else {
                 //deprecated in API 26
-                haptic.vibrate(500);
+                haptic.vibrate(vibrateTime);
             }
             while ((new Date().getTime() - timeBefore) < 1000) ;
         }
+    }
+
+    public void setVibrateTime(int time){
+        vibrateTime = time;
     }
 
     protected void callback() {
