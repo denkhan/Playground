@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.playground.Child;
+import com.example.playground.MainActivity;
 import com.example.playground.R;
 
 import java.util.List;
@@ -73,6 +74,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             holder.child_layout.setBackgroundResource(R.color.colorFar);
             holder.child_name.setTextColor(Color.WHITE);
             holder.child_distance.setTextColor(Color.WHITE);
+            ((MainActivity) context).warning();
         }
         holder.child_distance.setText((int)distance +  " m");
         holder.child_picture.setImageResource(mData.get(position).getImage());
