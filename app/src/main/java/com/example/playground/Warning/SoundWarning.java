@@ -33,12 +33,11 @@ public class SoundWarning extends AsyncWarning {
     public void action() {
         if (!running) {
             running = true;
-            while (running) {
-                mp.start();
-                while (mp.isPlaying() && running) ;
-                //mp.stop();
-            }
+            mp.setLooping(true);
+            mp.start();
+            while (mp.isLooping() && running) ;
             if (mp.isPlaying()) {
+                mp.setLooping(false);
                 mp.stop();
             }
             mp.release();
