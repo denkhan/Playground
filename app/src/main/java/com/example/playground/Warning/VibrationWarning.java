@@ -5,16 +5,31 @@ import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 
+import com.example.playground.Feedback.VibrationFeedback;
+
 import java.util.Date;
 
 public class VibrationWarning extends AsyncWarning {
 
-    protected Vibrator haptic;
-    private int vibrateTime = 500;
-    private static boolean running;
+    private Vibrator haptic;
+    protected int vibrateTime = 500;
+    public static boolean running;
+    private static VibrationWarning warning;
+    private static Context context;
 
-    public VibrationWarning(Context context) {
+    private VibrationWarning(Context context) {
         haptic = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
+    }
+
+    public static void setContext(Context context) {
+        VibrationWarning.context = context;
+    }
+
+    public static VibrationWarning getWarning() {
+        if (warning != null){
+            return warning;
+        }
+        return new VibrationWarning(context);
     }
 
     public void action() {
@@ -36,7 +51,7 @@ public class VibrationWarning extends AsyncWarning {
     }
 
     protected void callback() {
-
+        warning = null;
     }
 
     public boolean cancel() {

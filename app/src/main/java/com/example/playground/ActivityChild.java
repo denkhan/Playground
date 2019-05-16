@@ -24,6 +24,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Warning.VibrationWarning;
 
@@ -42,39 +43,16 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     private float[] mLastMagnetometer = new float[3];
     private boolean mLastAccelerometerSet = false;
     private boolean mLastMagnetometerSet = false;
-    private LocationManager locationManager;
     private TextView distance;
     private Parent parent;
     private Child child;
-    VibrationWarning v;
-    boolean warningOn = false;
-    Vibrator vibe;
-    Thread thread;
-    int time = 0;
     boolean vibrateOn = false;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
-
-        vibe = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
-
-        thread = new Thread(){
-            @Override
-            public void run(){
-                while(true){
-                    try{
-                        if(!vibrateOn){
-                            vibrate(time);
-                            sleep(1000);
-                        }
-
-                    }catch (Exception e){}
-                }
-                }
-        };
-        thread.start();
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = findViewById(R.id.compass_img);
@@ -100,8 +78,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
             distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m");
         }
 
-
-        start();
+        //start();
     }
 
     @Override
@@ -134,25 +111,26 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         //mAzimuth = Math.round(mAzimuth);
 
         compass_img.setRotation((float)-mAzimuth);
-        vibrateOn = true;
-        if (mAzimuth <= 250 && mAzimuth >= 110) time = 1000;
-        else if (mAzimuth < 270 && mAzimuth > 90) time = 800;
-        else if (mAzimuth <= 290 && mAzimuth > 70) time = 600;
-        else if (mAzimuth <= 310 && mAzimuth > 50) time = 400;
-        else if (mAzimuth <= 330 && mAzimuth > 30) time = 200;
-        else if (mAzimuth <= 350 && mAzimuth > 10) time = 100;
-        else { vibrateOn = false; }
-    }
+        mAzimuth = (mAzimuth + 720) % 360;
 
-    private void vibrate(int time){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibe.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            //deprecated in API 26
-            vibe.vibrate(time);
+        // mAzimuth 0 -> 180 right, 180 -> 360 left
+
+        if (mAzimuth < 340 && mAzimuth > 20) {
+            int vibrationTime;
+            int delay;
+            if (mAzimuth > 20 && mAzimuth < 180) {
+                VibrationFeedback.configureVibration(50, 400);
+            } else if (mAzimuth < 340)  {
+                VibrationFeedback.configureVibration(50, 300);
+            }
+            VibrationFeedback feedback = VibrationFeedback.getFeedback();
+            if (!feedback.running) {
+                feedback.execute();
+            }
         }
-
-
+        else {
+            VibrationFeedback.getFeedback().cancel();
+        }
     }
 
     @Override
@@ -195,6 +173,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mSensorManager.unregisterListener(this,mAccelerometer);
         mSensorManager.unregisterListener(this,mMagnetometer);
         mSensorManager.unregisterListener(this,mRotationV);
+        VibrationFeedback.getFeedback().cancel();
     }
 
     public void checkPermission() {

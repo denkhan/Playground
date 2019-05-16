@@ -77,7 +77,6 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
                 holder.child_layout.setBackgroundResource(R.color.colorFar);
                 holder.child_name.setTextColor(Color.WHITE);
                 holder.child_distance.setTextColor(Color.WHITE);
-                ((MainActivity) context).warning();
             }
             holder.child_distance.setText((int) distance + " m");
         } else {

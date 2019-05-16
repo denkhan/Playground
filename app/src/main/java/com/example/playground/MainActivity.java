@@ -35,6 +35,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Filesystem.ChildManager;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
@@ -49,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     ChildAdapter adapter;
     Parent parent;
-    private AsyncWarning[] warnings = new AsyncWarning[2];
     LocationManager locationManager;
     Location myLocation;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -65,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         checkLocationPermission();
         haptic = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+        SoundWarning.setContext(this);
+        VibrationWarning.setContext(this);
+        VibrationFeedback.setContext(this);
     }
 
         // Action when clicking on a child
@@ -94,34 +97,35 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void createGhostChild(Location location){
         parent = new Parent(location);
 
-        Location cLocation = new Location(location);
-        cLocation.setLatitude(cLocation.getLatitude()+0.001);
-        cLocation.setLongitude(cLocation.getLongitude()+0.001);
-        // data to populate the RecyclerView with
-        Child alice = ChildManager.database.get("child1");
-        alice.setPos(cLocation);
-        alice.setAllowedDistance(150);
-        ChildManager.registerChild("child1");
+        if (ChildManager.registerChild("child1") == 1) {
+            Location cLocation = new Location(location);
+            cLocation.setLatitude(cLocation.getLatitude()+0.001);
+            cLocation.setLongitude(cLocation.getLongitude()+0.001);
+            // data to populate the RecyclerView with
+            Child alice = ChildManager.database.get("child1");
+            alice.setPos(cLocation);
+            alice.setAllowedDistance(130);
+        }
 
-        Location bLocation = new Location(location);
-        bLocation.setLatitude(bLocation.getLatitude()-0.0003);
-        bLocation.setLongitude(bLocation.getLongitude()-0.0003);
-        // data to populate the RecyclerView with
-        Child bob = ChildManager.database.get("child2");
-        bob.setPos(bLocation);
-        bob.setAllowedDistance(60);
-        ChildManager.registerChild("child2");
+        if (ChildManager.registerChild("child2") == 1) {
+            Location bLocation = new Location(location);
+            bLocation.setLatitude(bLocation.getLatitude() - 0.0003);
+            bLocation.setLongitude(bLocation.getLongitude() - 0.0003);
+            // data to populate the RecyclerView with
+            Child bob = ChildManager.database.get("child2");
+            bob.setPos(bLocation);
+            bob.setAllowedDistance(60);
+        }
 
-        Location dLocation = new Location(location);
-        dLocation.setLatitude(dLocation.getLatitude()-0.0003);
-        dLocation.setLongitude(dLocation.getLongitude()+0.0003);
-        // data to populate the RecyclerView with
-        Child charlie = ChildManager.database.get("child3");
-        charlie.setPos(dLocation);
-        charlie.setAllowedDistance(100);
-        ChildManager.registerChild("child3");
-
-
+        if (ChildManager.registerChild("child3") == 1) {
+            Location dLocation = new Location(location);
+            dLocation.setLatitude(dLocation.getLatitude() - 0.0003);
+            dLocation.setLongitude(dLocation.getLongitude() + 0.0003);
+            // data to populate the RecyclerView with
+            Child charlie = ChildManager.database.get("child3");
+            charlie.setPos(dLocation);
+            charlie.setAllowedDistance(100);
+        }
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.rv_child);
@@ -249,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 createGhostChild(location);
             }        }
         resumeWarnings();
+        VibrationFeedback.getFeedback().cancel();
     }
 
     public boolean checkLocationPermission() {
@@ -316,24 +321,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-        warnings[0] = new SoundWarning(this);
-        warnings[1] = new VibrationWarning(this);
-
-        warnings[0].execute();
+        SoundWarning.getWarning().execute();
+        VibrationWarning temp = VibrationWarning.getWarning();
         //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
-            warnings[1].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-        else {
-            warnings[1].execute();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            temp.execute();
         }
     }
+
     public void warning_off() {
-        for (AsyncWarning warn : warnings) {
-            if (warn != null) {
-                warn.cancel();
-            }
-        }
+        SoundWarning.getWarning().cancel();
+        VibrationWarning.getWarning().cancel();
     }
 
     public void stopWarnings() {
@@ -354,6 +354,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             parent.setLocation(location);
             adapter.setLoc(location);
             adapter.notifyDataSetChanged();
+            boolean warningOn = false;
+            for (Child child : ChildManager.register) {
+                warningOn = warningOn || (!child.inRange(location) && child.isActive());
+            }
+            if (warningOn) {
+                warning();
+            } else {
+                warning_off();
+            }
         }
     }
 

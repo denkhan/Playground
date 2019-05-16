@@ -28,6 +28,10 @@ public abstract class AsyncWarning extends AsyncTask<Void, Void, String> {
         stopped = false;
     }
 
+    public boolean isStopped() {
+        return stopped;
+    }
+
     public abstract void action();
     protected abstract void callback();
     public abstract boolean cancel();
