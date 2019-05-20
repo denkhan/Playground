@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     Location myLocation;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     protected Vibrator haptic;
+    private boolean warningSoundOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -321,19 +322,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-        SoundWarning.getWarning().execute();
-        VibrationWarning temp = VibrationWarning.getWarning();
-        //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else {
-            temp.execute();
+        if(!warningSoundOn){
+            SoundWarning.getWarning().execute();
+            VibrationWarning temp = VibrationWarning.getWarning();
+            //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                temp.execute();
+            }
         }
+        warningSoundOn = true;
+
     }
 
     public void warning_off() {
+        Log.d("HALLÅ", "HALLÅ");
         SoundWarning.getWarning().cancel();
         VibrationWarning.getWarning().cancel();
+        warningSoundOn = false;
     }
 
     public void stopWarnings() {
@@ -354,11 +361,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             parent.setLocation(location);
             adapter.setLoc(location);
             adapter.notifyDataSetChanged();
-            boolean warningOn = false;
+            boolean childFarAway = false;
             for (Child child : ChildManager.register) {
-                warningOn = warningOn || (!child.inRange(location) && child.isActive());
+                childFarAway = (!child.inRange(location) && child.isActive());
             }
-            if (warningOn) {
+            if (childFarAway) {
                 warning();
             } else {
                 warning_off();

@@ -2,6 +2,7 @@ package com.example.playground.Warning;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.util.Log;
 
 import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.R;
@@ -21,12 +22,18 @@ public class SoundWarning extends AsyncWarning {
 
     public static void setContext(Context context) {
         SoundWarning.context = context;
+        if(warning == null){
+            warning = new SoundWarning(context);
+        }
     }
 
     public static SoundWarning getWarning() {
         if (warning != null){
+            Log.d("TEST", "TEST");
             return warning;
         }
+        Log.d("TEST2", "TEST2");
+
         return new SoundWarning(context);
     }
 
@@ -45,7 +52,7 @@ public class SoundWarning extends AsyncWarning {
     }
 
     protected void callback() {
-        warning = null;
+        warning = new SoundWarning(context);
     }
 
     public boolean cancel() {
