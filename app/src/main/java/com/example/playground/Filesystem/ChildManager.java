@@ -19,11 +19,9 @@ import java.util.HashMap;
 public class ChildManager {
 
     public static HashMap<String, Child> database;
-    private static HashMap<String, Child> registered_children;
     public static ArrayList<Child> register;
     static {
         database = new HashMap<>();
-        registered_children = new HashMap<>();
         register = new ArrayList<>();
 
         database.put("child1", new Child("Alice", R.drawable.one, "child1"));
@@ -38,14 +36,29 @@ public class ChildManager {
         database.put("child10", new Child("Name", R.drawable.ten, "child10"));
     }
 
+    private static Child getChild(String username) {
+        for (Child child : register) {
+            if (child.getUsername().equals(username)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
     public static int registerChild(String username) {
-        if (registered_children.get(username) != null && database.get(username) != null) {
+        if (getChild(username) != null && database.get(username) != null) {
             return 0;
         } else if (database.get(username) != null) {
-            registered_children.put(username, database.get(username));
             register.add(database.get(username));
             return 1;
         }
         return -1;
+    }
+
+    public static void removeChild(String username) {
+        Child temp = getChild(username);
+        if (temp != null) {
+            register.remove(temp);
+        }
     }
 }

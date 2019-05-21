@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,8 +23,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Warning.AsyncWarning;
@@ -74,7 +78,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
-            distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m");
+            distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
         }
 
         //start();
@@ -212,7 +216,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     @Override
     public void onLocationChanged(Location location) {
         parent.setLocation(location);
-        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m");
+        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m /n (Allowed: " + child.getAllowedDistance() + ")");
     }
 
     @Override
@@ -228,5 +232,24 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    //source: https://stackoverflow.com/questions/31175601/how-can-i-change-default-toast-message-color-and-background-color-in-android
+    private void toastMessage(String message, int duration, int background_color, int text_color) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        View view = toast.getView();
+
+        //Gets the actual oval background of the Toast then sets the colour filter
+        view.getBackground().setColorFilter(background_color, PorterDuff.Mode.SRC_IN);
+
+        //Gets the TextView from the Toast so it can be editted
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(text_color);
+
+        toast.show();
+    }
+
+    public void voice(View v) {
+        toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
     }
 }

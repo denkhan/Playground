@@ -29,8 +29,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,6 +71,42 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         SoundWarning.setContext(this);
         VibrationWarning.setContext(this);
         VibrationFeedback.setContext(this);
+
+        //source: http://www.androidtutorialshub.com/android-recyclerview-click-listener-tutorial/
+        RecyclerView recyclerView = findViewById(R.id.rv_child);
+        recyclerView.addOnItemTouchListener(new RecyclerViewTouchListener(getApplicationContext(), recyclerView, new RecyclerViewClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                removeChild(ChildManager.register.get(position).getUsername());
+            }
+        }));
+    }
+
+    public void removeChild(final String username){
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        alertDialog.setTitle("Remove child");
+        LayoutInflater inflater = this.getLayoutInflater();
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Remove",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        ChildManager.removeChild(username);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        childChecker(myLocation);
+        alertDialog.show();
     }
 
         // Action when clicking on a child
@@ -390,5 +428,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onProviderDisabled(String s) { }
+
+    public void logOut(MenuItem v) {
+        toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+    }
+
+    public void voice(View v) {
+        toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+    }
 
 }
