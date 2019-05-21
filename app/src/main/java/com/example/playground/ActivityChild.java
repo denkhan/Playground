@@ -29,7 +29,6 @@ import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Warning.VibrationWarning;
 
 import java.util.Date;
-
 public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     ImageView compass_img;
@@ -118,10 +117,14 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         if (mAzimuth < 340 && mAzimuth > 20) {
             int vibrationTime;
             int delay;
-            if (mAzimuth > 20 && mAzimuth < 180) {
-                VibrationFeedback.configureVibration(50, 400);
-            } else if (mAzimuth < 340)  {
+            if (mAzimuth > 120 && mAzimuth < 240) {
+                VibrationFeedback.configureVibration(50, 100);
+            } else if (mAzimuth > 90 && mAzimuth < 270)  {
+                VibrationFeedback.configureVibration(50, 200);
+            } else if (mAzimuth > 50 && mAzimuth < 310)  {
                 VibrationFeedback.configureVibration(50, 300);
+            } else {
+                VibrationFeedback.configureVibration(50, 400);
             }
             VibrationFeedback feedback = VibrationFeedback.getFeedback();
             if (!feedback.running) {

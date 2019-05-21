@@ -88,11 +88,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void activateChild(View v) {
         String id = ((TextView)((ConstraintLayout)v.getParent()).findViewById(R.id.child_id)).getText().toString();
         if (((Switch)v).isChecked()) {
-            Log.d("AKTIVERA BARN", "HEJ");
             ChildManager.database.get(id).activate(true);
         } else {
             ChildManager.database.get(id).activate(false);
         }
+        childChecker(myLocation);
         adapter.notifyDataSetChanged();
     }
 
@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         }
                     }
                 });
+        childChecker(myLocation);
         alertDialog.show();
     }
 
@@ -362,15 +363,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             parent.setLocation(location);
             adapter.setLoc(location);
             adapter.notifyDataSetChanged();
-            boolean childFarAway = false;
-            for (Child child : ChildManager.register) {
-                childFarAway = childFarAway || (!child.inRange(location) && child.isActive());
-            }
-            if (childFarAway) {
-                warning();
-            } else {
-                warning_off();
-            }
+            childChecker(location);
+        }
+    }
+
+    private void childChecker(Location location){
+        boolean childFarAway = false;
+
+        for (Child child : ChildManager.register) {
+            childFarAway = childFarAway || (!child.inRange(location) && child.isActive());
+        }
+        if (childFarAway) {
+            warning();
+        } else {
+            warning_off();
         }
     }
 
