@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     Location myLocation;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     protected Vibrator haptic;
-    private boolean warningSoundOn = false;
+    //private boolean warningSoundOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
             locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
-                    50,
+                    40,
                     1, this);
 
 
@@ -290,6 +290,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }        }
         resumeWarnings();
         VibrationFeedback.getFeedback().cancel();
+        checkPermission();
+        childChecker(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     }
 
     public boolean checkLocationPermission() {
@@ -357,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-        if(!warningSoundOn){
+        if (!SoundWarning.getWarning().running && !VibrationWarning.getWarning().running) {
             SoundWarning.getWarning().execute();
             VibrationWarning temp = VibrationWarning.getWarning();
             //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
@@ -367,7 +369,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 temp.execute();
             }
         }
-        warningSoundOn = true;
 
     }
 
@@ -375,7 +376,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Log.d("HALLÅ", "HALLÅ");
         SoundWarning.getWarning().cancel();
         VibrationWarning.getWarning().cancel();
-        warningSoundOn = false;
     }
 
     public void stopWarnings() {

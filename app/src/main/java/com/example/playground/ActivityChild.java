@@ -13,18 +13,12 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,10 +30,7 @@ import android.widget.Toast;
 
 import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Filesystem.ChildManager;
-import com.example.playground.Warning.AsyncWarning;
-import com.example.playground.Warning.VibrationWarning;
 
-import java.util.Date;
 public class ActivityChild extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     ImageView compass_img;
@@ -71,7 +62,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         checkPermission();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
-                50,
+                10,
                 1, this);
 
         distance = (TextView)findViewById(R.id.distance);
@@ -83,7 +74,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
-            distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
+            setDistanceText((int) child.distanceBetween(location), child.getAllowedDistance());
         }
 
         //start();
@@ -123,17 +114,17 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         // mAzimuth 0 -> 180 right, 180 -> 360 left
 
-        if (mAzimuth < 340 && mAzimuth > 20) {
+        if (mAzimuth < 345 && mAzimuth > 15) {
             int vibrationTime;
             int delay;
-            if (mAzimuth > 120 && mAzimuth < 240) {
-                VibrationFeedback.configureVibration(50, 100);
-            } else if (mAzimuth > 90 && mAzimuth < 270)  {
-                VibrationFeedback.configureVibration(50, 200);
-            } else if (mAzimuth > 50 && mAzimuth < 310)  {
+            if (mAzimuth < 25 || mAzimuth > 335)  {
+                VibrationFeedback.configureVibration(50, 350);
+            } else if (mAzimuth < 35 || mAzimuth > 325) {
                 VibrationFeedback.configureVibration(50, 300);
+            } else if (mAzimuth < 55 || mAzimuth > 305) {
+                    VibrationFeedback.configureVibration(50, 200);
             } else {
-                VibrationFeedback.configureVibration(50, 400);
+                VibrationFeedback.configureVibration(50, 100);
             }
             VibrationFeedback feedback = VibrationFeedback.getFeedback();
             if (!feedback.running) {
@@ -207,7 +198,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
                             ChildManager.getChild(child.getUsername()).setAllowedDistance(Integer.parseInt(input.toString()));
                             child.setAllowedDistance(Integer.parseInt(input.toString()));
                             checkPermission();
-                            distance.setText(String.format("%.2f", child.distanceBetween(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
+                            setDistanceText((int) child.distanceBetween(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)), child.getAllowedDistance());
                         }
                     }
                 });
@@ -255,7 +246,11 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     @Override
     public void onLocationChanged(Location location) {
         parent.setLocation(location);
-        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
+        setDistanceText((int) child.distanceBetween(location), child.getAllowedDistance());
+    }
+
+    private void setDistanceText(int currentDistance, int allowedDistance) {
+        distance.setText("Distance: " + currentDistance +  "m\n(Allowed: " + allowedDistance + "m)");
     }
 
     @Override
