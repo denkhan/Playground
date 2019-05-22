@@ -36,7 +36,7 @@ public class ChildManager {
         database.put("child10", new Child("Name", R.drawable.ten, "child10"));
     }
 
-    private static Child getChild(String username) {
+    public static Child getChild(String username) {
         for (Child child : register) {
             if (child.getUsername().equals(username)) {
                 return child;

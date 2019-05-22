@@ -1,0 +1,13 @@
+
+<!-- source: https://stackoverflow.com/questions/48468230/settings-button-with-icon-in-action-bar-android-studio -->
+<menu xmlns:tools="http://schemas.android.com/tools"
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+tools:ignore="AlwaysShowAction"
+tools:context="com.example.playground.MainActivity">
+    <item
+        android:id="@+id/your_item_id"
+        android:icon="@drawable/settings"
+        android:onClick="childSettings"
+        app:showAsAction="always" />
+</menu>

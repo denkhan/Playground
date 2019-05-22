@@ -13,7 +13,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.Manifest;
-import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.constraint.ConstraintLayout;
@@ -29,10 +28,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +40,6 @@ import com.example.playground.Adapter.ChildAdapter;
 import com.example.playground.Warning.SoundWarning;
 import com.example.playground.Warning.VibrationWarning;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
@@ -189,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         View dialogView = inflater.inflate(R.layout.add_child, null);
         alertDialog.setView(dialogView);
 
-        final EditText eT1 = (EditText) dialogView.findViewById(R.id.edit_text_child_name);
+        final EditText eT1 = (EditText) dialogView.findViewById(R.id.edit_text_child_allowed_distance);
         final EditText eT2 = (EditText) dialogView.findViewById(R.id.edit_text_child_distance);
 
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -284,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
             locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
-                    500,
+                    50,
                     1, this);
 
 

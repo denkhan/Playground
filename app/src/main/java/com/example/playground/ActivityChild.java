@@ -22,13 +22,20 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.playground.Feedback.VibrationFeedback;
+import com.example.playground.Filesystem.ChildManager;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Warning.VibrationWarning;
 
@@ -64,7 +71,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         checkPermission();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
-                500,
+                50,
                 1, this);
 
         distance = (TextView)findViewById(R.id.distance);
@@ -73,8 +80,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
         child = (Child) intent.getSerializableExtra("CHILD");
         parent = (Parent) intent.getSerializableExtra("PARENT");
-
-        getSupportActionBar().setTitle(child.getname());
 
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
@@ -176,6 +181,40 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         alertDialog.show();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.child_toolbar, menu);
+        getSupportActionBar().setTitle(child.getname());
+        return true;
+    }
+
+    public void childSettings(MenuItem item) {
+        AlertDialog alertDialog = new AlertDialog.Builder(ActivityChild.this).create();
+        alertDialog.setTitle("Child Settings");
+        final LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.child_settings, null);
+        alertDialog.setView(dialogView);
+
+        final EditText eT1 = dialogView.findViewById(R.id.edit_text_child_allowed_distance);
+        //final EditText eT2 = (EditText) dialogView.findViewById(R.id.edit_text_child_distance);
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Editable input = eT1.getText();
+                        if (!input.toString().equals("")){
+                            ChildManager.getChild(child.getUsername()).setAllowedDistance(Integer.parseInt(input.toString()));
+                            child.setAllowedDistance(Integer.parseInt(input.toString()));
+                            checkPermission();
+                            distance.setText(String.format("%.2f", child.distanceBetween(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
+                        }
+                    }
+                });
+        alertDialog.show();
+        eT1.setHint("Allowed distance: " + child.getAllowedDistance() + "m");
+    }
+
     public void stop() {
         mSensorManager.unregisterListener(this,mAccelerometer);
         mSensorManager.unregisterListener(this,mMagnetometer);
@@ -216,7 +255,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     @Override
     public void onLocationChanged(Location location) {
         parent.setLocation(location);
-        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m /n (Allowed: " + child.getAllowedDistance() + ")");
+        distance.setText(String.format("%.2f", child.distanceBetween(location)) +  " m\n(Allowed: " + child.getAllowedDistance() + ")");
     }
 
     @Override
