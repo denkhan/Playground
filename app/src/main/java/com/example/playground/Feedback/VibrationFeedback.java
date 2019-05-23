@@ -61,7 +61,7 @@ public class VibrationFeedback extends AsyncWarning {
     }
 
     protected void callback() {
-        warning = null;
+        warning = new VibrationFeedback(context);
     }
 
     public static void configureVibration(int time, int delay) {
