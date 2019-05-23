@@ -1,5 +1,10 @@
 package com.example.playground;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,10 +40,20 @@ import android.widget.Toast;
 
 import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Filesystem.ChildManager;
+import com.example.playground.Service.MyLocationService;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
 import com.example.playground.Warning.SoundWarning;
 import com.example.playground.Warning.VibrationWarning;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.util.Date;
 import java.util.Random;
@@ -51,7 +66,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     Location myLocation;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     protected Vibrator haptic;
-    //private boolean warningSoundOn = false;
+    private static MainActivity instance;
+    LocationRequest locationRequest;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    private static boolean running_in_background;
+
+    public static MainActivity getInstance() {
+        return instance;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         VibrationWarning.setContext(this);
         VibrationFeedback.setContext(this);
 
+        instance = this;
+
         //source: http://www.androidtutorialshub.com/android-recyclerview-click-listener-tutorial/
         RecyclerView recyclerView = findViewById(R.id.rv_child);
         recyclerView.addOnItemTouchListener(new RecyclerViewTouchListener(getApplicationContext(), recyclerView, new RecyclerViewClickListener() {
@@ -80,6 +104,48 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         }));
     }
+
+    /*private void updateLocation() {
+        buildLocationRequest();
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
+    }
+
+    private PendingIntent getPendingIntent() {
+        Intent intent = new Intent(this, MyLocationService.class);
+        intent.setAction(MyLocationService.ACTION_PROCESS_UPDATE);
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void buildLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(500);
+        locationRequest.setFastestInterval(300);
+        locationRequest.setSmallestDisplacement(1f);
+    }
+
+    public void updateLocation(final Location location) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                childChecker(location);
+            }
+        });
+    }
+
+    private Notification createForegroundNotofication() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+
+        }
+        return null;
+    }
+    */
 
     public void removeChild(final String username){
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -273,9 +339,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onResume() {
         super.onResume();
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
+        VibrationFeedback.getFeedback().cancel();
+        resumeWarnings();
+        if (checkLocationPermission()) {
 
             locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
@@ -287,39 +353,46 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             myLocation = location;
             if(location!=null){
                 createGhostChild(location);
-            }        }
-        resumeWarnings();
-        VibrationFeedback.getFeedback().cancel();
-        checkPermission();
-        childChecker(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            }
+
+            if (!running_in_background) {
+                //initBackgroundLocation();
+            }
+            //updateLocation();
+            childChecker(location);
+        }
     }
 
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) || ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
 
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                new AlertDialog.Builder(this)
-                        .setTitle("No location")
-                        .setMessage("No location")
-                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                ActivityCompat.requestPermissions(MainActivity.this,
-                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION);
-                            }
-                        })
-                        .create()
-                        .show();
+                    // Show an explanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+                    new AlertDialog.Builder(this)
+                            .setTitle("No location")
+                            .setMessage("No location")
+                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    //Prompt the user once explanation has been shown
+                                    /*ActivityCompat.requestPermissions(MainActivity.this,
+                                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                            MY_PERMISSIONS_REQUEST_LOCATION);*/
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                                }
+                            })
+                            .create()
+                            .show();
 
 
             } else {
@@ -359,14 +432,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-        if (!SoundWarning.getWarning().running && !VibrationWarning.getWarning().running) {
+        if (!SoundWarning.getWarning().running) {
             SoundWarning.getWarning().execute();
-            VibrationWarning temp = VibrationWarning.getWarning();
-            //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
-                temp.execute();
+            if (!VibrationWarning.getWarning().running) {
+                VibrationWarning temp = VibrationWarning.getWarning();
+                //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else {
+                    temp.execute();
+                }
             }
         }
 
