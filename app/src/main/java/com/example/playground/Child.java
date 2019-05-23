@@ -69,4 +69,9 @@ public class Child extends AppCompatActivity implements Serializable {
         return Math.sqrt(distance);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return ((Child) o).username.equals(username);
+    }
+
 }

@@ -2,6 +2,7 @@ package com.example.playground.Filesystem;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.location.Location;
 
 import com.example.playground.Child;
 import com.example.playground.R;
@@ -20,6 +21,7 @@ public class ChildManager {
 
     public static HashMap<String, Child> database;
     public static ArrayList<Child> register;
+    private static boolean init;
     static {
         database = new HashMap<>();
         register = new ArrayList<>();
@@ -59,6 +61,31 @@ public class ChildManager {
         Child temp = getChild(username);
         if (temp != null) {
             register.remove(temp);
+        }
+    }
+
+    public static void ghostChildrenInit(Location location) {
+        if(!init && false) {
+            if (ChildManager.registerChild("child8") == 1) {
+                Location cLocation = new Location(location);
+                cLocation.setLatitude(cLocation.getLatitude() + 0.001);
+                cLocation.setLongitude(cLocation.getLongitude() + 0.001);
+                // data to populate the RecyclerView with
+                Child alice = ChildManager.database.get("child8");
+                alice.setPos(cLocation);
+                alice.setAllowedDistance(130);
+            }
+
+            if (ChildManager.registerChild("child2") == 1) {
+                Location bLocation = new Location(location);
+                bLocation.setLatitude(bLocation.getLatitude() - 0.0003);
+                bLocation.setLongitude(bLocation.getLongitude() - 0.0003);
+                // data to populate the RecyclerView with
+                Child bob = ChildManager.database.get("child2");
+                bob.setPos(bLocation);
+                bob.setAllowedDistance(60);
+            }
+            init = true;
         }
     }
 }

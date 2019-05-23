@@ -14,7 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <receiver
-            android:name=".Service.MyLocationService"/>
+            android:name=".Service.LocationReceiver"/>
+        <service
+            android:name=".Service.LocationUpdatesService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver android:name=".Service.MyLocationService" />
 
         <activity
             android:name=".MainActivity"

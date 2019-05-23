@@ -28,7 +28,7 @@ public class SoundWarning extends AsyncWarning {
     }
 
     public static SoundWarning getWarning() {
-        if (warning != null){
+        if (warning != null && running){
             Log.d("TEST", "TEST");
             return warning;
         }

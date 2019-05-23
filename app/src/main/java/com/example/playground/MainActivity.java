@@ -40,14 +40,12 @@ import android.widget.Toast;
 
 import com.example.playground.Feedback.VibrationFeedback;
 import com.example.playground.Filesystem.ChildManager;
-import com.example.playground.Service.MyLocationService;
 import com.example.playground.Warning.AsyncWarning;
 import com.example.playground.Adapter.ChildAdapter;
 import com.example.playground.Warning.SoundWarning;
 import com.example.playground.Warning.VibrationWarning;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 
 import java.util.Date;
 import java.util.Random;
@@ -63,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static MainActivity instance;
     LocationRequest locationRequest;
     FusedLocationProviderClient fusedLocationProviderClient;
-    private static boolean running_in_background;
+
+    private static boolean warningOn;
 
     public static MainActivity getInstance() {
         return instance;
@@ -77,11 +76,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        checkLocationPermission();
-        haptic = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
         SoundWarning.setContext(this);
         VibrationWarning.setContext(this);
         VibrationFeedback.setContext(this);
+        checkLocationPermission();
+
+        haptic = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
 
         instance = this;
 
@@ -95,62 +95,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             @Override
             public void onLongClick(View view, int position) {
                 removeChild(ChildManager.register.get(position).getUsername());
+                vibrate(200);
             }
         }));
     }
 
-    /*private void updateLocation() {
-        buildLocationRequest();
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
-    }
-
-    private PendingIntent getPendingIntent() {
-        Intent intent = new Intent(this, MyLocationService.class);
-        intent.setAction(MyLocationService.ACTION_PROCESS_UPDATE);
-        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private void buildLocationRequest() {
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(500);
-        locationRequest.setFastestInterval(300);
-        locationRequest.setSmallestDisplacement(1f);
-    }
-
-    public void updateLocation(final Location location) {
-        MainActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                childChecker(location);
-            }
-        });
-    }
-
-    private Notification createForegroundNotofication() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-
-        }
-        return null;
-    }
-    */
-
     public void removeChild(final String username){
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Remove child");
-        LayoutInflater inflater = this.getLayoutInflater();
 
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Remove",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         ChildManager.removeChild(username);
                         adapter.notifyDataSetChanged();
+                        emptyListFeedback();
                     }
                 });
 
@@ -169,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Switch t1 = v.findViewById(R.id.child_active);
         if (t1.isChecked()) {
             Intent intent = new Intent(getBaseContext(), ActivityChild.class);
-            TextView t = (TextView) v.findViewById(R.id.child_name);
-            intent.putExtra("CHILD", getChild(t.getText().toString()));
+            TextView t = (TextView) v.findViewById(R.id.child_id);
+            intent.putExtra("CHILD", ChildManager.getChild(t.getText().toString()));
             intent.putExtra("PARENT", parent);
             startActivity(intent);
             stopWarnings();
@@ -189,28 +148,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         adapter.notifyDataSetChanged();
     }
 
-    public void createGhostChild(Location location){
+    private void populateGhostChildren(Location location) {
         parent = new Parent(location);
 
-        if (ChildManager.registerChild("child8") == 1) {
-            Location cLocation = new Location(location);
-            cLocation.setLatitude(cLocation.getLatitude()+0.001);
-            cLocation.setLongitude(cLocation.getLongitude()+0.001);
-            // data to populate the RecyclerView with
-            Child alice = ChildManager.database.get("child8");
-            alice.setPos(cLocation);
-            alice.setAllowedDistance(130);
-        }
+        ChildManager.ghostChildrenInit(location);
 
-        if (ChildManager.registerChild("child2") == 1) {
-            Location bLocation = new Location(location);
-            bLocation.setLatitude(bLocation.getLatitude() - 0.0003);
-            bLocation.setLongitude(bLocation.getLongitude() - 0.0003);
-            // data to populate the RecyclerView with
-            Child bob = ChildManager.database.get("child2");
-            bob.setPos(bLocation);
-            bob.setAllowedDistance(60);
-        }
+        emptyListFeedback();
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.rv_child);
@@ -219,11 +162,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         recyclerView.setAdapter(adapter);
     }
 
-    public Child getChild(String name){
-        for(Child c : ChildManager.register){
-            if(c.getname().equals(name)) return c;
+    private void emptyListFeedback() {
+        TextView feedback = findViewById(R.id.empty_list_message);
+        if(ChildManager.register.size() < 1) {
+            feedback.setVisibility(View.VISIBLE);
+        } else {
+            feedback.setVisibility(View.INVISIBLE);
         }
-        return null;
     }
 
         // Action of ADD CHILD button
@@ -239,14 +184,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+                public void onClick (DialogInterface dialog,int which){
+                    if(!eT1.getText().toString().equals("") && !eT2.getText().toString().equals("")) {
                         String m = eT1.getText().toString();
                         //int temp = Integer.parseInt(eT2.getText().toString());
                         Location l = new Location(myLocation);
-                        double random = new Random().nextInt(200)-100;
-                        l.setLatitude(l.getLatitude()+random/100000);
-                        random = new Random().nextInt(200)-100;
-                        l.setLongitude(l.getLongitude()-random/100000);
+                        double random = new Random().nextInt(200) - 100;
+                        l.setLatitude(l.getLatitude() + random / 100000);
+                        random = new Random().nextInt(200) - 100;
+                        l.setLongitude(l.getLongitude() - random / 100000);
                         int result = ChildManager.registerChild(m);
                         dialog.dismiss();
                         if (result == 1) {
@@ -255,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
                             //Children.add(new Child(m, temp));
                             adapter.notifyDataSetChanged();
+                            emptyListFeedback();
                             userRegisteredMessage(m);
                         } else if (result == -1) {
                             // user doesn't exist in the database, do something
@@ -263,7 +210,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             // child already registered
                             userAlreadyRegisteredMessage(m);
                         }
+                    } else {
+                        leftOutFieldMessage();
                     }
+                }
                 });
         childChecker(myLocation);
         alertDialog.show();
@@ -278,13 +228,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
+    private void leftOutFieldMessage() {
+        toastMessage("Failed to add user. Please fill all fields.", 15000, Color.RED, Color.WHITE);
+        vibrate(400);
+    }
+
     private void userNotFoundMessage(String username) {
-        toastMessage("Account for : " + username + " was not found", 15000, Color.RED, Color.WHITE);
+        toastMessage("Account for : " + username + " was not found.", 15000, Color.RED, Color.WHITE);
         vibrate(600);
     }
 
     private void userAlreadyRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is already registered", 15000, Color.GRAY, Color.WHITE);
+        toastMessage("Account for : " + username + " is already registered.", 15000, Color.GRAY, Color.WHITE);
         for (int i = 0; i < 2; i++) {
             long timeBefore = new Date().getTime();
             vibrate(150);
@@ -293,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void userRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is registered", 15000, Color.GREEN, Color.WHITE);
+        toastMessage("Account for : " + username + " is registered.", 15000, Color.GREEN, Color.WHITE);
         vibrate(100);
     }
 
@@ -336,15 +291,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             myLocation = location;
             if(location!=null){
-                createGhostChild(location);
+                populateGhostChildren(location);
             }
 
-            if (!running_in_background) {
-                //initBackgroundLocation();
-            }
             //updateLocation();
             childChecker(location);
         }
+        //adapter.notifyDataSetChanged();
     }
 
     public boolean checkLocationPermission() {
@@ -416,28 +369,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-        try {
-            if (!SoundWarning.getWarning().running) {
-                SoundWarning.getWarning().execute();
-                if (!VibrationWarning.getWarning().running) {
-                    VibrationWarning temp = VibrationWarning.getWarning();
-                    //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    } else {
-                        temp.execute();
-                    }
-                }
+        if (!SoundWarning.getWarning().running) {
+            SoundWarning.getWarning().execute();
+        }
+        if (!VibrationWarning.getWarning().running) {
+            VibrationWarning temp = VibrationWarning.getWarning();
+            //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                temp.execute();
             }
-        }catch (Exception e){}
-
-
+        }
+        warningOn = true;
     }
 
     public void warning_off() {
         Log.d("HALLÅ", "HALLÅ");
         SoundWarning.getWarning().cancel();
         VibrationWarning.getWarning().cancel();
+        warningOn = false;
     }
 
     public void stopWarnings() {
@@ -453,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         myLocation = location;
         if(parent==null){
-            createGhostChild(location);
+            populateGhostChildren(location);
         }else {
             parent.setLocation(location);
             adapter.setLoc(location);
@@ -468,9 +419,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         for (Child child : ChildManager.register) {
             childFarAway = childFarAway || (!child.inRange(location) && child.isActive());
         }
-        if (childFarAway) {
+        if (childFarAway && !warningOn) {
             warning();
-        } else {
+        } else if (!childFarAway && warningOn) {
             warning_off();
         }
     }
