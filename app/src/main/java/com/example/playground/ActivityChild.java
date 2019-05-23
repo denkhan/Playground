@@ -113,27 +113,28 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mAzimuth = (mAzimuth + 720) % 360;
 
         // mAzimuth 0 -> 180 right, 180 -> 360 left
-
-        if (mAzimuth < 345 && mAzimuth > 15) {
-            int vibrationTime;
-            int delay;
-            if (mAzimuth < 25 || mAzimuth > 335)  {
-                VibrationFeedback.configureVibration(50, 350);
-            } else if (mAzimuth < 35 || mAzimuth > 325) {
-                VibrationFeedback.configureVibration(50, 300);
-            } else if (mAzimuth < 55 || mAzimuth > 305) {
+        try{
+            if (mAzimuth < 345 && mAzimuth > 15) {
+                int vibrationTime;
+                int delay;
+                if (mAzimuth < 25 || mAzimuth > 335)  {
+                    VibrationFeedback.configureVibration(50, 350);
+                } else if (mAzimuth < 35 || mAzimuth > 325) {
+                    VibrationFeedback.configureVibration(50, 300);
+                } else if (mAzimuth < 55 || mAzimuth > 305) {
                     VibrationFeedback.configureVibration(50, 200);
-            } else {
-                VibrationFeedback.configureVibration(50, 100);
+                } else {
+                    VibrationFeedback.configureVibration(50, 100);
+                }
+                if (!VibrationFeedback.getFeedback().running) {
+                    VibrationFeedback.getFeedback().execute();
+                }
             }
-            VibrationFeedback feedback = VibrationFeedback.getFeedback();
-            if (!feedback.running) {
-                feedback.execute();
+            else {
+                VibrationFeedback.getFeedback().cancel();
             }
-        }
-        else {
-            VibrationFeedback.getFeedback().cancel();
-        }
+        }catch (Exception e){}
+
     }
 
     @Override

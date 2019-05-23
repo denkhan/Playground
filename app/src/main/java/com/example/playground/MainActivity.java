@@ -432,19 +432,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
-
-        if (!SoundWarning.getWarning().running) {
-            SoundWarning.getWarning().execute();
-            if (!VibrationWarning.getWarning().running) {
-                VibrationWarning temp = VibrationWarning.getWarning();
-                //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                } else {
-                    temp.execute();
+        try {
+            if (!SoundWarning.getWarning().running) {
+                SoundWarning.getWarning().execute();
+                if (!VibrationWarning.getWarning().running) {
+                    VibrationWarning temp = VibrationWarning.getWarning();
+                    //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        temp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        temp.execute();
+                    }
                 }
             }
-        }
+        }catch (Exception e){}
+
 
     }
 
