@@ -24,16 +24,16 @@ public class ChildManager {
         database = new HashMap<>();
         register = new ArrayList<>();
 
-        database.put("child1", new Child("Alice", R.drawable.one, "child1"));
+        database.put("child1", new Child("Anders", R.drawable.one, "child1"));
         database.put("child2", new Child("Bob", R.drawable.two, "child2"));
         database.put("child3", new Child("Charlie", R.drawable.three, "child3"));
-        database.put("child4", new Child("Brad", R.drawable.four, "child4"));
-        database.put("child5", new Child("Bart", R.drawable.five, "child5"));
-        database.put("child6", new Child("Lisa", R.drawable.six, "child6"));
-        database.put("child7", new Child("Romeo", R.drawable.seven, "child7"));
-        database.put("child8", new Child("Charmander", R.drawable.eight, "child8"));
-        database.put("child9", new Child("Pikachu", R.drawable.nine, "child9"));
-        database.put("child10", new Child("Name", R.drawable.ten, "child10"));
+        database.put("child4", new Child("Dennis", R.drawable.four, "child4"));
+        database.put("child5", new Child("Emil", R.drawable.five, "child5"));
+        database.put("child6", new Child("Felicia", R.drawable.six, "child6"));
+        database.put("child7", new Child("Gunilla", R.drawable.seven, "child7"));
+        database.put("child8", new Child("Hanna", R.drawable.eight, "child8"));
+        database.put("child9", new Child("Ida", R.drawable.nine, "child9"));
+        database.put("child10", new Child("Julia", R.drawable.ten, "child10"));
     }
 
     public static Child getChild(String username) {

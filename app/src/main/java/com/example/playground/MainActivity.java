@@ -48,12 +48,6 @@ import com.example.playground.Warning.VibrationWarning;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionDeniedResponse;
-import com.karumi.dexter.listener.PermissionGrantedResponse;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.util.Date;
 import java.util.Random;
@@ -198,12 +192,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void createGhostChild(Location location){
         parent = new Parent(location);
 
-        if (ChildManager.registerChild("child1") == 1) {
+        if (ChildManager.registerChild("child8") == 1) {
             Location cLocation = new Location(location);
             cLocation.setLatitude(cLocation.getLatitude()+0.001);
             cLocation.setLongitude(cLocation.getLongitude()+0.001);
             // data to populate the RecyclerView with
-            Child alice = ChildManager.database.get("child1");
+            Child alice = ChildManager.database.get("child8");
             alice.setPos(cLocation);
             alice.setAllowedDistance(130);
         }
@@ -216,16 +210,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Child bob = ChildManager.database.get("child2");
             bob.setPos(bLocation);
             bob.setAllowedDistance(60);
-        }
-
-        if (ChildManager.registerChild("child3") == 1) {
-            Location dLocation = new Location(location);
-            dLocation.setLatitude(dLocation.getLatitude() - 0.0003);
-            dLocation.setLongitude(dLocation.getLongitude() + 0.0003);
-            // data to populate the RecyclerView with
-            Child charlie = ChildManager.database.get("child3");
-            charlie.setPos(dLocation);
-            charlie.setAllowedDistance(100);
         }
 
         // set up the RecyclerView
