@@ -65,7 +65,7 @@ public class ChildManager {
     }
 
     public static void ghostChildrenInit(Location location) {
-        if(!init && false) {
+        if(!init) {
             if (ChildManager.registerChild("child8") == 1) {
                 Location cLocation = new Location(location);
                 cLocation.setLatitude(cLocation.getLatitude() + 0.001);
