@@ -76,8 +76,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         if(location!=null){
             setDistanceText((int) child.distanceBetween(location), child.getAllowedDistance());
         }
-
-        //start();
     }
 
     @Override
