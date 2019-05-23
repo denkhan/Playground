@@ -140,9 +140,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void activateChild(View v) {
         String id = ((TextView)((ConstraintLayout)v.getParent()).findViewById(R.id.child_id)).getText().toString();
         if (((Switch)v).isChecked()) {
-            ChildManager.database.get(id).activate(true);
+            ChildManager.getChild(id).activate(true);
         } else {
-            ChildManager.database.get(id).activate(false);
+            ChildManager.getChild(id).activate(false);
         }
         childChecker(myLocation);
         adapter.notifyDataSetChanged();
@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ChildAdapter(this, ChildManager.register, location);
         recyclerView.setAdapter(adapter);
+        childChecker(location);
     }
 
     private void emptyListFeedback() {
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         int result = ChildManager.registerChild(m);
                         dialog.dismiss();
                         if (result == 1) {
-                            Child child = ChildManager.database.get(m);
+                            Child child = ChildManager.getChild(m);
                             child.setPos(l);
                             child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
                             //Children.add(new Child(m, temp));
@@ -293,11 +294,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if(location!=null){
                 populateGhostChildren(location);
             }
-
-            //updateLocation();
-            childChecker(location);
         }
-        //adapter.notifyDataSetChanged();
     }
 
     public boolean checkLocationPermission() {
@@ -439,6 +436,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void logOut(MenuItem v) {
         toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+
+        //changes child location to trigger alarm for filming
+        checkLocationPermission();
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location cLocation = new Location(location);
+        cLocation.setLatitude(cLocation.getLatitude() - 0.0005);
+        cLocation.setLongitude(cLocation.getLongitude() - 0.0005);
+        // data to populate the RecyclerView with
+        ChildManager.getChild("child2").setPos(cLocation);
+        adapter.notifyDataSetChanged();
+        childChecker(location);
     }
 
     public void voice(View v) {

@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 public class ChildManager {
 
-    public static HashMap<String, Child> database;
+    private static HashMap<String, Child> database;
     public static ArrayList<Child> register;
     private static boolean init;
     static {
@@ -78,8 +78,8 @@ public class ChildManager {
 
             if (ChildManager.registerChild("child2") == 1) {
                 Location bLocation = new Location(location);
-                bLocation.setLatitude(bLocation.getLatitude() - 0.0003);
-                bLocation.setLongitude(bLocation.getLongitude() - 0.0003);
+                bLocation.setLatitude(bLocation.getLatitude() - 0.00006);
+                bLocation.setLongitude(bLocation.getLongitude() - 0.00006);
                 // data to populate the RecyclerView with
                 Child bob = ChildManager.database.get("child2");
                 bob.setPos(bLocation);
