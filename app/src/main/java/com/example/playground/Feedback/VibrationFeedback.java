@@ -25,6 +25,7 @@ public class VibrationFeedback extends AsyncWarning {
 
     public static void setContext(Context context) {
         VibrationFeedback.context = context;
+        warning = new VibrationFeedback(context);
     }
 
     public static VibrationFeedback getFeedback() {

@@ -432,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void warning() {
+
         if (!SoundWarning.getWarning().running) {
             SoundWarning.getWarning().execute();
             if (!VibrationWarning.getWarning().running) {
