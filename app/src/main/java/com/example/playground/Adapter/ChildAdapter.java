@@ -1,20 +1,17 @@
 package com.example.playground.Adapter;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
-import android.os.VibrationEffect;
+import android.os.Build;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -23,7 +20,6 @@ import com.example.playground.MainActivity;
 import com.example.playground.R;
 
 import java.util.List;
-import java.util.Random;
 
 public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> {
 
@@ -55,41 +51,41 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         double distance =  mData.get(position).distanceBetween(location);
-        /*int rand = new Random().nextInt(8)+1;
-        if(rand == 1) holder.child_picture.setImageResource(R.drawable.one);
-        else if(rand == 2) holder.child_picture.setImageResource(R.drawable.two);
-        else if(rand == 3) holder.child_picture.setImageResource(R.drawable.three);
-        else if(rand == 4) holder.child_picture.setImageResource(R.drawable.four);
-        else if(rand == 5) holder.child_picture.setImageResource(R.drawable.five);
-        else if(rand == 6) holder.child_picture.setImageResource(R.drawable.six);
-        else if(rand == 7) holder.child_picture.setImageResource(R.drawable.seven);
-        else if(rand == 8) holder.child_picture.setImageResource(R.drawable.eight);
-        else if(rand == 9) holder.child_picture.setImageResource(R.drawable.nine);
-        */
-
         if (mData.get(position).isActive()) {
-            holder.child_layout.setAlpha(1f);
+            holder.child_item.setAlpha(1f);
             if (mData.get(position).inRange(location)) {
-                holder.child_layout.setBackgroundResource(R.color.colorClose);
-                holder.child_name.setTextColor(Color.parseColor("#333333"));
-                holder.child_distance.setTextColor(Color.parseColor("#333333"));
+                untriggeredActiveView(holder);
             } else {
-                holder.child_layout.setBackgroundResource(R.color.colorFar);
-                holder.child_name.setTextColor(Color.WHITE);
-                holder.child_distance.setTextColor(Color.WHITE);
+                triggeredActiveView(holder);
             }
-            holder.child_distance.setText((int) distance + " m");
+            holder.child_distance.setText(MainActivity.formatDistance(distance));
         } else {
-            holder.child_layout.setBackgroundResource(R.color.colorClose);
-            holder.child_layout.setAlpha(0.5f);
-            holder.child_name.setTextColor(Color.parseColor("#333333"));
-            holder.child_distance.setTextColor(Color.parseColor("#333333"));
+            untriggeredActiveView(holder);
+            holder.child_item.setAlpha(0.5f);
             holder.child_distance.setText("");
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            holder.child_layout.setTranslationZ(6f);
         }
         holder.child_picture.setImageResource(mData.get(position).getImage());
         holder.child_active.setChecked(mData.get(position).isActive());
         holder.child_name.setText(mData.get(position).getname());
         holder.child_id.setText(mData.get(position).getUsername());
+    }
+
+    private void triggeredActiveView(ViewHolder holder) {
+        activeView(holder, R.color.colorFurther, Color.WHITE);
+    }
+
+    private void untriggeredActiveView(ViewHolder holder) {
+        activeView(holder, R.color.colorClose, Color.parseColor("#333333"));
+    }
+
+    private void activeView(ViewHolder holder, int backgroundColor, int textColor) {
+        //holder.child_item.setBackgroundResource(backgroundColor);
+        holder.child_distance.setTextColor(textColor);
+        holder.child_name.setTextColor(textColor);
+        holder.child_layout.setBackgroundResource(backgroundColor);
     }
 
     // total number of rows
@@ -107,6 +103,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
         ConstraintLayout child_layout;
         Switch child_active;
         TextView child_id;
+        LinearLayout child_item;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -116,6 +113,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder> 
             child_picture = itemView.findViewById(R.id.imageView2);
             child_active = itemView.findViewById(R.id.child_active);
             child_id = itemView.findViewById(R.id.child_id);
+            child_item = itemView.findViewById(R.id.child_item);
         }
     }
 }

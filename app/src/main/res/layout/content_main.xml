@@ -22,7 +22,7 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <include
-            layout="@layout/child_item"
+            layout="@layout/child_item1"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>

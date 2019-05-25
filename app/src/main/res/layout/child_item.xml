@@ -4,16 +4,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/child_item"
-    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="8dp">
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:foreground="@android:color/transparent">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/child_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_marginBottom="6dp"
         android:background="@color/colorFar"
+        android:elevation="2dp"
         android:longClickable="true"
         android:onClick="openChild">
 
@@ -53,34 +58,29 @@
             style="@style/textStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
             app:layout_constraintBottom_toBottomOf="@+id/child_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageView2"
-            app:layout_constraintTop_toTopOf="@+id/child_name" />
+            app:layout_constraintEnd_toStartOf="@+id/child_active"
+            app:layout_constraintTop_toTopOf="@+id/child_name"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="50 m" />
 
         <Switch
             android:id="@+id/child_active"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:onClick="activateChild"
-            android:text="Active"
+            android:padding="16dp"
             android:textOff="OFF"
             android:textOn="ON"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/child_distance"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.509" />
 

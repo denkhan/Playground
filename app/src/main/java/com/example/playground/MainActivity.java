@@ -59,14 +59,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     protected Vibrator haptic;
     private static MainActivity instance;
-    LocationRequest locationRequest;
-    FusedLocationProviderClient fusedLocationProviderClient;
 
     private static boolean warningOn;
-
-    public static MainActivity getInstance() {
-        return instance;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         recyclerView.addOnItemTouchListener(new RecyclerViewTouchListener(getApplicationContext(), recyclerView, new RecyclerViewClickListener() {
             @Override
             public void onClick(View view, int position) {
+
             }
 
             @Override
@@ -101,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     public void removeChild(final String username){
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Remove child");
 
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Remove",
@@ -119,13 +114,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
                     }
                 });
+
+        alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
+                alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
+            }
+        });
         childChecker(myLocation);
         alertDialog.show();
     }
 
         // Action when clicking on a child
     public void openChild(View v){
-        Switch t1 = v.findViewById(R.id.child_active);
+        Switch t1 = ((View )v.getParent()).findViewById(R.id.child_active);
         if (t1.isChecked()) {
             Intent intent = new Intent(getBaseContext(), ActivityChild.class);
             TextView t = (TextView) v.findViewById(R.id.child_id);
@@ -134,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             startActivity(intent);
             stopWarnings();
             warning_off();
+        } else {
+            vibrate(100);
         }
     }
 
@@ -174,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         // Action of ADD CHILD button
     public void addChild(View v){
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Add child");
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.add_child, null);
@@ -216,6 +221,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     }
                 }
                 });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+        alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.GREEN);
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
+            }
+        });
+
         childChecker(myLocation);
         alertDialog.show();
     }
@@ -230,17 +251,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void leftOutFieldMessage() {
-        toastMessage("Failed to add user. Please fill all fields.", 15000, Color.RED, Color.WHITE);
+        toastMessage("Failed to add user. Please fill all fields.", Color.RED, Color.WHITE);
         vibrate(400);
     }
 
     private void userNotFoundMessage(String username) {
-        toastMessage("Account for : " + username + " was not found.", 15000, Color.RED, Color.WHITE);
+        toastMessage("Account for : " + username + " was not found.", Color.RED, Color.WHITE);
         vibrate(600);
     }
 
     private void userAlreadyRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is already registered.", 15000, Color.GRAY, Color.WHITE);
+        toastMessage("Account for : " + username + " is already registered.", Color.GRAY, Color.WHITE);
         for (int i = 0; i < 2; i++) {
             long timeBefore = new Date().getTime();
             vibrate(150);
@@ -249,12 +270,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void userRegisteredMessage(String username) {
-        toastMessage("Account for : " + username + " is registered.", 15000, Color.GREEN, Color.WHITE);
+        toastMessage("Account for : " + username + " is registered.", Color.GREEN, Color.WHITE);
         vibrate(100);
     }
 
     //source: https://stackoverflow.com/questions/31175601/how-can-i-change-default-toast-message-color-and-background-color-in-android
-    private void toastMessage(String message, int duration, int background_color, int text_color) {
+    private void toastMessage(String message, int background_color, int text_color) {
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         View view = toast.getView();
 
@@ -435,22 +456,36 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onProviderDisabled(String s) { }
 
     public void logOut(MenuItem v) {
-        toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+        toastMessage("Function not implemented", Color.GRAY, Color.WHITE);
 
         //changes child location to trigger alarm for filming
-        checkLocationPermission();
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        Location cLocation = new Location(location);
-        cLocation.setLatitude(cLocation.getLatitude() - 0.0005);
-        cLocation.setLongitude(cLocation.getLongitude() - 0.0005);
-        // data to populate the RecyclerView with
-        ChildManager.getChild("child2").setPos(cLocation);
-        adapter.notifyDataSetChanged();
-        childChecker(location);
+        if (ChildManager.getChild("child2") != null) {
+            checkLocationPermission();
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location cLocation = new Location(location);
+            cLocation.setLatitude(cLocation.getLatitude() - 0.0005);
+            cLocation.setLongitude(cLocation.getLongitude() - 0.0005);
+            // data to populate the RecyclerView with
+            ChildManager.getChild("child2").setPos(cLocation);
+            adapter.notifyDataSetChanged();
+            childChecker(location);
+        }
     }
 
     public void voice(View v) {
-        toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+        toastMessage("Function not implemented", Color.GRAY, Color.WHITE);
+    }
+
+    public static String formatDistance(double distance) {
+        double kilometers = distance/1000;
+        if (kilometers >= 100) {
+            return "99+ km";
+        } else if (kilometers >= 10){
+            return Math.round(kilometers) + " km";
+        } else if (kilometers >= 1) {
+            return Math.round(kilometers * 10.0) / 10.0 + " km";
+        }
+        return Math.round(distance) + " m";
     }
 
 }

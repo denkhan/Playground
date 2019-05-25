@@ -7,6 +7,7 @@
     <color name="colorGreen">#44F0A1</color>
     <color name="colorBlue">#44E9F0</color>
     <color name="colorFar">#FF5349</color>
+    <color name="colorFurther">#FF807A</color>
     <color name="colorClose">#FFFFFF</color>
     <color name="textColor">#333333</color>
 </resources>

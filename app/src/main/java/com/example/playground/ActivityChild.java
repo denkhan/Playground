@@ -58,7 +58,6 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = findViewById(R.id.compass_img);
 
-
         checkPermission();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
@@ -72,6 +71,8 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
         child = (Child) intent.getSerializableExtra("CHILD");
         parent = (Parent) intent.getSerializableExtra("PARENT");
 
+        ((ImageView)findViewById(R.id.child_image)).setImageResource(child.getImage());
+
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
             setDistanceText((int) child.distanceBetween(location), child.getAllowedDistance());
@@ -82,25 +83,24 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             SensorManager.getRotationMatrixFromVector(rMat, event.values);
-            // mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
-        }
+            rMat = lowPass(rMat, rMat, 0.4f);
+            mAzimuth = (int) (Math.toDegrees(SensorManager.getOrientation(rMat, orientation)[0]) + 360) % 360;
+        } else {
 
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            System.arraycopy(event.values, 0, mLastAccelerometer, 0, event.values.length);
-            mLastAccelerometerSet = true;
-        } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            System.arraycopy(event.values, 0, mLastMagnetometer, 0, event.values.length);
-            mLastMagnetometerSet = true;
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                mLastAccelerometer = lowPass(event.values.clone(), mLastAccelerometer, 0.08f);
+                mLastAccelerometerSet = true;
+            } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                mLastMagnetometer = lowPass(event.values.clone(), mLastMagnetometer, 0.18f);
+                mLastMagnetometerSet = true;
+            }
+            if (mLastAccelerometerSet && mLastMagnetometerSet) {
+                SensorManager.getRotationMatrix(rMat, null, mLastAccelerometer, mLastMagnetometer);
+                //SensorManager.getOrientation(rMat, orientation);
+                rMat = lowPass(rMat, rMat, 0.2f);
+                mAzimuth = (int) (Math.toDegrees(SensorManager.getOrientation(rMat, orientation)[0]) + 360) % 360;
+            }
         }
-        if (mLastAccelerometerSet && mLastMagnetometerSet) {
-            SensorManager.getRotationMatrix(rMat, null, mLastAccelerometer, mLastMagnetometer);
-            SensorManager.getOrientation(rMat, orientation);
-            // mAzimuth = bearing(child.getpLat(), child.getpLon(), child.getcLat(), child.getcLon());
-        }
-
-        SensorManager.getOrientation(rMat, orientation);
-        mAzimuth = (float) Math.toDegrees(orientation[0]); // orientation
-        mAzimuth = (mAzimuth + 360) % 360;
 
         mAzimuth -= bearing(parent.getLat(), parent.getLon(), child.getcLat(), child.getcLon());
 
@@ -117,9 +117,9 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
                 int delay;
                 if (mAzimuth < 25 || mAzimuth > 335)  {
                     VibrationFeedback.configureVibration(50, 350);
-                } else if (mAzimuth < 35 || mAzimuth > 325) {
+                } else if (mAzimuth < 30 || mAzimuth > 330) {
                     VibrationFeedback.configureVibration(50, 300);
-                } else if (mAzimuth < 55 || mAzimuth > 305) {
+                } else if (mAzimuth < 45 || mAzimuth > 315) {
                     VibrationFeedback.configureVibration(50, 200);
                 } else {
                     VibrationFeedback.configureVibration(50, 100);
@@ -175,12 +175,12 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.child_toolbar, menu);
-        getSupportActionBar().setTitle(child.getname());
+        getSupportActionBar().setTitle(child.getname() + " (Allowed: " + child.getAllowedDistance() + " m)");
         return true;
     }
 
     public void childSettings(MenuItem item) {
-        AlertDialog alertDialog = new AlertDialog.Builder(ActivityChild.this).create();
+        final AlertDialog alertDialog = new AlertDialog.Builder(ActivityChild.this).create();
         alertDialog.setTitle("Child Settings");
         final LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.child_settings, null);
@@ -201,8 +201,24 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
                         }
                     }
                 });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+        alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.GREEN);
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
+            }
+        });
+
         alertDialog.show();
-        eT1.setHint("Allowed distance: " + child.getAllowedDistance() + "m");
+        eT1.setHint("Allowed distance: " + child.getAllowedDistance() + " m");
     }
 
     public void stop() {
@@ -249,7 +265,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
     }
 
     private void setDistanceText(int currentDistance, int allowedDistance) {
-        distance.setText("Distance: " + currentDistance +  "m\n(Allowed: " + allowedDistance + "m)");
+        distance.setText("Distance: " + MainActivity.formatDistance(currentDistance));
     }
 
     @Override
@@ -284,5 +300,14 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
 
     public void voice(View v) {
         toastMessage("Function not implemented", 0, Color.GRAY, Color.WHITE);
+    }
+
+    //Source: https://www.built.io/blog/applying-low-pass-filter-to-android-sensor-s-readings
+    private float[] lowPass( float[] input, float[] output, float alpha ) {
+        if ( output == null ) return input;
+        for ( int i=0; i<input.length; i++ ) {
+            output[i] = output[i] + alpha * (input[i] - output[i]);
+        }
+        return output;
     }
 }
