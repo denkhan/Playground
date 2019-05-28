@@ -78,8 +78,8 @@ public class ChildManager {
 
             if (ChildManager.registerChild("child2") == 1) {
                 Location bLocation = new Location(location);
-                bLocation.setLatitude(bLocation.getLatitude() - 0.00006);
-                bLocation.setLongitude(bLocation.getLongitude() - 0.00006);
+                bLocation.setLatitude(55.71119);
+                bLocation.setLongitude(13.20992);
                 // data to populate the RecyclerView with
                 Child bob = ChildManager.database.get("child2");
                 bob.setPos(bLocation);

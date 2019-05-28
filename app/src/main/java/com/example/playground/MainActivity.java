@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         ChildManager.removeChild(username);
                         adapter.notifyDataSetChanged();
                         emptyListFeedback();
+                        childChecker(myLocation);
                     }
                 });
 
@@ -122,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
             }
         });
-        childChecker(myLocation);
         alertDialog.show();
     }
 
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         l.setLongitude(l.getLongitude() - random / 100000);
                         int result = ChildManager.registerChild(m);
                         dialog.dismiss();
-                        if (result == 1) {
+                        if (result == 1 && !m.equals("child2")) {
                             Child child = ChildManager.getChild(m);
                             child.setPos(l);
                             child.setAllowedDistance(Integer.parseInt(eT2.getText().toString()));
@@ -209,7 +209,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             adapter.notifyDataSetChanged();
                             emptyListFeedback();
                             userRegisteredMessage(m);
-                        } else if (result == -1) {
+                            childChecker(myLocation);
+                        } else if (result == 1) {
+                            Location bLocation = new Location(myLocation);
+                            bLocation.setLatitude(55.71119);
+                            bLocation.setLongitude(13.20992);
+                            // data to populate the RecyclerView with
+                            Child bob = ChildManager.getChild("child2");
+                            bob.setPos(bLocation);
+                            bob.setAllowedDistance(60);
+                            childChecker(myLocation);
+                        }else if (result == -1) {
                             // user doesn't exist in the database, do something
                             userNotFoundMessage(m);
                         } else {
@@ -236,8 +246,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
             }
         });
-
-        childChecker(myLocation);
         alertDialog.show();
     }
 
@@ -315,10 +323,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if(location!=null){
                 populateGhostChildren(location);
             }
+
+            childChecker(location);
         }
     }
 
     public boolean checkLocationPermission() {
+        AlertDialog temp = null;
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
@@ -333,9 +344,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     // Show an explanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
                     // sees the explanation, try again to request the permission.
-                    new AlertDialog.Builder(this)
-                            .setTitle("No location")
-                            .setMessage("No location")
+                    temp = new AlertDialog.Builder(this)
+                            .setTitle("Playground")
+                            .setMessage("This app needs access to your location to function. Your information will not be shared with third parties.")
                             .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -346,9 +357,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
                                 }
                             })
-                            .create()
-                            .show();
+                            .create();
 
+                    temp.show();
 
             } else {
                 // No explanation needed, we can request the permission.
@@ -390,6 +401,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         if (!SoundWarning.getWarning().running) {
             SoundWarning.getWarning().execute();
         }
+
         if (!VibrationWarning.getWarning().running) {
             VibrationWarning temp = VibrationWarning.getWarning();
             //source: https://stackoverflow.com/questions/15471831/asynctask-not-running-asynchronously
@@ -399,14 +411,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 temp.execute();
             }
         }
-        warningOn = true;
     }
 
     public void warning_off() {
         Log.d("HALLÅ", "HALLÅ");
         SoundWarning.getWarning().cancel();
         VibrationWarning.getWarning().cancel();
-        warningOn = false;
     }
 
     public void stopWarnings() {
@@ -437,9 +447,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         for (Child child : ChildManager.register) {
             childFarAway = childFarAway || (!child.inRange(location) && child.isActive());
         }
-        if (childFarAway && !warningOn) {
+        if (childFarAway) {
             warning();
-        } else if (!childFarAway && warningOn) {
+        } else {
             warning_off();
         }
     }
@@ -457,19 +467,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void logOut(MenuItem v) {
         toastMessage("Function not implemented", Color.GRAY, Color.WHITE);
-
-        //changes child location to trigger alarm for filming
-        if (ChildManager.getChild("child2") != null) {
-            checkLocationPermission();
-            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Location cLocation = new Location(location);
-            cLocation.setLatitude(cLocation.getLatitude() - 0.0005);
-            cLocation.setLongitude(cLocation.getLongitude() - 0.0005);
-            // data to populate the RecyclerView with
-            ChildManager.getChild("child2").setPos(cLocation);
-            adapter.notifyDataSetChanged();
-            childChecker(location);
-        }
     }
 
     public void voice(View v) {

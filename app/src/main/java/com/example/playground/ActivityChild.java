@@ -196,8 +196,7 @@ public class ActivityChild extends AppCompatActivity implements SensorEventListe
                         if (!input.toString().equals("")){
                             ChildManager.getChild(child.getUsername()).setAllowedDistance(Integer.parseInt(input.toString()));
                             child.setAllowedDistance(Integer.parseInt(input.toString()));
-                            checkPermission();
-                            setDistanceText((int) child.distanceBetween(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)), child.getAllowedDistance());
+                            getSupportActionBar().setTitle(child.getname() + " (Allowed: " + child.getAllowedDistance() + " m)");
                         }
                     }
                 });
